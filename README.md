@@ -56,6 +56,19 @@ Amidst **cannot**:
   * diamond ore
   * cows
 
+## MTM Worldgen
+
+This fork also shows worlds of the MTM Worldgen mod. It runs the terrain logic straight from the mod jar, so it needs no Minecraft installation:
+
+```
+java -jar amidst.jar -mtmgamedir <game directory> [-mtmjar <mtm_worldgen jar>]
+```
+
+* The game directory provides `saves/`, `config/mtm_worldgen.json` and, unless `-mtmjar` is given, the jar in `mods/`.
+* Opened saves use the settings locked in their `level.dat`. Worlds from a seed use the config file, or the defaults of the mod.
+* A launcher profile with MTM Worldgen in its mods folder also switches to MTM worlds.
+* The map, the world spawn and the flat-ground rule for villages come from the mod. Other structures follow the 1.17 rules Amidst knows, so they are approximate. Foreign chunks merged into a world are not shown, and the Nether is not available.
+
 ## Amidst has found a new home
 
 Amidst was moved to a new location, since Skidoodle aka skiphs is too busy to maintain it. It has also found some new developers. One of them is DrFrankenstone, a.k.a. Treer, who is the developer of AmidstExporter. Skidoodle is still an owner of Amidst and agreed to move the project.

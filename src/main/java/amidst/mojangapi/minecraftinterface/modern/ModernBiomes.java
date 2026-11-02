@@ -120,6 +120,11 @@ public enum ModernBiomes {
 		return Collections.unmodifiableMap(result);
 	}
 
+	/** The ids of the biomes Amidst knows, by key such as minecraft:meadow. */
+	public static Map<String, Integer> knownIds() {
+		return KNOWN_IDS;
+	}
+
 	/**
 	 * Gives every biome of the registry an id. Biomes that Amidst does not
 	 * know get ids in the order of their sorted keys, so they keep their ids

@@ -17,6 +17,8 @@ import amidst.parsing.FormatException;
 
 @Immutable
 public class LevelDatNbt {
+	private static final String MTM_BIOME_SOURCE = "mtm_worldgen:terrain";
+
 	public static LevelDatNbt from(Path path) throws IOException, FormatException {
 		try {
 			CompoundTag dataTag = readDataTag(NBTUtils.readTagFromFile(path));
@@ -96,8 +98,20 @@ public class LevelDatNbt {
 		if (worldType == WorldType.CUSTOMIZED) {
 			return readGeneratorOptions(dataTag);
 		} else {
-			return "";
+			return readMtmSettings(dataTag);
 		}
+	}
+
+	// MTM Worldgen locks the settings of a world into its biome source when the world is created
+	private static String readMtmSettings(CompoundTag dataTag) {
+		Tag<?> biomeSource = NBTUtils.getNestedTag(dataTag,
+			"WorldGenSettings", "dimensions", "minecraft:overworld", "generator", "biome_source");
+		Tag<?> type = NBTUtils.getNestedTag(biomeSource, "type");
+		Tag<?> settings = NBTUtils.getNestedTag(biomeSource, "settings");
+		if (new StringTag(MTM_BIOME_SOURCE).equals(type) && settings instanceof StringTag) {
+			return ((StringTag) settings).getValue();
+		}
+		return "";
 	}
 
 	private static String readGeneratorName(CompoundTag dataTag) {
