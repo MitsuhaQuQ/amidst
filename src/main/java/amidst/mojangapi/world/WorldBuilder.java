@@ -77,7 +77,9 @@ public class WorldBuilder {
 		}
 		MinecraftInterface.WorldAccessor worldAccessor = new ThreadedWorldAccessor(v -> minecraftInterface.createWorldAccessor(worldOptions));
 		seedHistoryLogger.log(recognisedVersion, worldOptions.getWorldSeed());
-		return DefaultVersionFeatures.builder(worldOptions, worldAccessor).create(recognisedVersion);
+		VersionFeatures.Builder features = DefaultVersionFeatures.builder(worldOptions, worldAccessor);
+		minecraftInterface.overrideFeatures(features, worldOptions);
+		return features.create(recognisedVersion);
 	}
 
 	private World create(
@@ -100,7 +102,7 @@ public class WorldBuilder {
 				versionFeatures.get(FeatureKey.STRONGHOLD_PRODUCER),
 				new PlayerProducer(movablePlayerList),
 				new MultiProducer<>(
-						versionFeatures.get(FeatureKey.VILLAGE_PRODUCER),
+						versionFeatures.get(FeatureKey.VILLAGE_ICON_PRODUCER),
 						versionFeatures.get(FeatureKey.PILLAGER_OUTPOST_PRODUCER)
 				),
 				new MultiProducer<>(

@@ -2,7 +2,9 @@ package amidst.mojangapi.minecraftinterface;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import amidst.clazz.Classes;
@@ -23,6 +25,8 @@ import amidst.mojangapi.minecraftinterface.legacy._1_15ClassTranslator;
 import amidst.mojangapi.minecraftinterface.legacy._1_15MinecraftInterface;
 import amidst.mojangapi.minecraftinterface.local.DefaultClassTranslator;
 import amidst.mojangapi.minecraftinterface.local.LocalMinecraftInterface;
+import amidst.mojangapi.minecraftinterface.mtm.MtmLauncherProfile;
+import amidst.mojangapi.minecraftinterface.mtm.MtmMinecraftInterface;
 
 public enum MinecraftInterfaces {
     ;
@@ -30,6 +34,15 @@ public enum MinecraftInterfaces {
     @NotNull
     public static MinecraftInterface fromLocalProfile(LauncherProfile launcherProfile)
             throws MinecraftInterfaceCreationException {
+        if (launcherProfile instanceof MtmLauncherProfile) {
+            return ((MtmLauncherProfile) launcherProfile).createInterface();
+        }
+        // A profile with MTM Worldgen installed shows MTM worlds
+        Path gameDirectory = launcherProfile.getSaves().getParent();
+        Optional<Path> mtmJar = MtmLauncherProfile.findModJar(gameDirectory);
+        if (mtmJar.isPresent()) {
+            return MtmMinecraftInterface.create(mtmJar.get(), gameDirectory);
+        }
         try {
             URLClassLoader classLoader = launcherProfile.newClassLoader();
             RecognisedVersion recognisedVersion = RecognisedVersion.from(classLoader);

@@ -373,6 +373,9 @@ public enum DefaultVersionFeatures {
 						features.get(BUGGY_STRUCTURE_COORDINATE_MATH)
 					)
 				))
+			.with(FeatureKey.VILLAGE_ICON_PRODUCER, VersionFeature.fixed(features ->
+					features.get(FeatureKey.VILLAGE_PRODUCER)
+				))
 			.with(VILLAGE_VALID_BIOMES, VersionFeature.<Integer> listBuilder()
 				.init()
 				.sinceExtend(RecognisedVersion._b1_8_1,

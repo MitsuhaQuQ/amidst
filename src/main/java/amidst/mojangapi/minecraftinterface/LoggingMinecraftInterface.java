@@ -6,6 +6,7 @@ import amidst.documentation.ThreadSafe;
 import amidst.logging.AmidstLogger;
 import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.WorldOptions;
+import amidst.mojangapi.world.versionfeatures.VersionFeatures;
 
 @ThreadSafe
 public class LoggingMinecraftInterface implements MinecraftInterface {
@@ -54,5 +55,11 @@ public class LoggingMinecraftInterface implements MinecraftInterface {
 	@Override
 	public RecognisedVersion getRecognisedVersion() {
 		return inner.getRecognisedVersion();
+	}
+
+	@Override
+	public void overrideFeatures(VersionFeatures.Builder features, WorldOptions worldOptions)
+			throws MinecraftInterfaceException {
+		inner.overrideFeatures(features, worldOptions);
 	}
 }

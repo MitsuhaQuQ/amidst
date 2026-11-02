@@ -14,6 +14,7 @@ import org.kohsuke.args4j.spi.Setter;
 import amidst.documentation.ThreadSafe;
 import amidst.mojangapi.file.LauncherProfile;
 import amidst.mojangapi.file.MinecraftInstallation;
+import amidst.mojangapi.minecraftinterface.mtm.MtmLauncherProfile;
 import amidst.mojangapi.world.WorldOptions;
 import amidst.mojangapi.world.WorldSeed;
 import amidst.mojangapi.world.WorldType;
@@ -57,6 +58,22 @@ public class CommandLineParameters {
 	    forbids = { "-mcjar", "-mcjson" }
 	)
     public volatile String profileName;
+
+	@Option(
+	    name = "-mtmjar",
+	    usage = "location of the MTM Worldgen jar, to show MTM worlds without a Minecraft installation",
+	    metaVar = "<file>",
+	    forbids = { "-profile", "-mcjar", "-mcjson" }
+	)
+	public volatile Path mtmJarFile;
+
+	@Option(
+	    name = "-mtmgamedir",
+	    usage = "game directory with MTM Worldgen in its mods folder, its config and its saves",
+	    metaVar = "<directory>",
+	    forbids = { "-profile", "-mcjar", "-mcjson" }
+	)
+	public volatile Path mtmGameDirectory;
 
 	@Option(
 	    name = "-biome-profiles",
@@ -117,6 +134,9 @@ public class CommandLineParameters {
 	}
 
 	public Optional<LauncherProfile> getInitialLauncherProfile(MinecraftInstallation minecraftInstallation) {
+	    if (mtmJarFile != null || mtmGameDirectory != null) {
+	        return Optional.of(MtmLauncherProfile.create(mtmJarFile, mtmGameDirectory));
+	    }
 	    if (profileName != null) {
 	        return minecraftInstallation.tryGetLauncherProfileFromName(profileName);
 	    }

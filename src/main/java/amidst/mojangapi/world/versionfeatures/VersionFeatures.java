@@ -3,6 +3,7 @@ package amidst.mojangapi.world.versionfeatures;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import amidst.documentation.Immutable;
@@ -59,6 +60,27 @@ public class VersionFeatures {
 
 		public<T> Builder withValue(FeatureKey<T> key, T value) {
 			return addEntry(key, new Entry<>(Objects.requireNonNull(value)));
+		}
+
+		/**
+		 * Like {@link #withValue}, but replaces a feature that was already set.
+		 */
+		public<T> Builder withOverride(FeatureKey<T> key, T value) {
+			features.put(Objects.requireNonNull(key), new Entry<>(Objects.requireNonNull(value)));
+			return this;
+		}
+
+		/**
+		 * Replaces a feature that was already set by what the wrapper makes of it.
+		 */
+		public<T> Builder withWrapper(FeatureKey<T> key, UnaryOperator<T> wrapper) {
+			@SuppressWarnings("unchecked")
+			Entry<T> inner = (Entry<T>) features.get(key);
+			if (inner == null) {
+				throw new IllegalArgumentException("the feature " + key + " is not set");
+			}
+			features.put(key, new Entry<T>((version, f) -> wrapper.apply(new Entry<>(inner).getOrCompute(f))));
+			return this;
 		}
 
 		@Override

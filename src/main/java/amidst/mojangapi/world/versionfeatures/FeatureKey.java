@@ -34,6 +34,8 @@ public class FeatureKey<T> {
 	public static final FeatureKey<WorldIconProducer<Void>> MINESHAFT_PRODUCER               = make();
 	public static final FeatureKey<CachedWorldIconProducer> STRONGHOLD_PRODUCER           = make();
 	public static final FeatureKey<VillageProducer>         VILLAGE_PRODUCER              = make();
+	// The villages shown on the map; other structures that avoid villages use VILLAGE_PRODUCER
+	public static final FeatureKey<WorldIconProducer<Void>> VILLAGE_ICON_PRODUCER            = make();
 	public static final FeatureKey<WorldIconProducer<Void>> PILLAGER_OUTPOST_PRODUCER        = make();
 	public static final FeatureKey<WorldIconProducer<Void>> DESERT_TEMPLE_PRODUCER           = make();
 	public static final FeatureKey<WorldIconProducer<Void>> IGLOO_PRODUCER                   = make();
