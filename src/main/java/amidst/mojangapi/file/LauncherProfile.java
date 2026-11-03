@@ -79,4 +79,15 @@ public class LauncherProfile {
 				versionJson.getLibraries(),
 				versionDirectory.getJar());
 	}
+
+	/**
+	 * A class loader in which Minecraft sees its own libraries rather than
+	 * those of Amidst.
+	 */
+	public URLClassLoader newIsolatedClassLoader() throws MalformedURLException {
+		return classLoaderService.createIsolatedClassLoader(
+				dotMinecraftDirectory.getLibraries(),
+				versionJson.getLibraries(),
+				versionDirectory.getJar());
+	}
 }

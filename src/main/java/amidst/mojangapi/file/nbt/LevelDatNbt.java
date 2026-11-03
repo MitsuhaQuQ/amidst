@@ -1,10 +1,12 @@
 package amidst.mojangapi.file.nbt;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import net.querz.nbt.tag.ByteTag;
 import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.IntArrayTag;
 import net.querz.nbt.tag.StringTag;
 import net.querz.nbt.tag.Tag;
 
@@ -18,9 +20,10 @@ public class LevelDatNbt {
 	public static LevelDatNbt from(Path path) throws IOException, FormatException {
 		try {
 			CompoundTag dataTag = readDataTag(NBTUtils.readTagFromFile(path));
-			long seed = readRandomSeed(dataTag);
+			CompoundTag worldGenSettings = readWorldGenSettings(dataTag, path);
+			long seed = readRandomSeed(dataTag, worldGenSettings);
 			CoordinatesInWorld worldSpawn = readWorldSpawn(dataTag);
-			WorldType worldType = readWorldType(dataTag);
+			WorldType worldType = readWorldType(dataTag, worldGenSettings);
 			String generatorOptions = readGeneratorOptions(dataTag, worldType);
 			boolean hasPlayer = hasPlayerTag(dataTag);
 			return new LevelDatNbt(seed, worldSpawn, worldType, generatorOptions, hasPlayer);
@@ -33,17 +36,36 @@ public class LevelDatNbt {
 		return root.get(NBTTagKeys.TAG_KEY_DATA, CompoundTag.class);
 	}
 
-	private static long readRandomSeed(CompoundTag dataTag) {
+	/**
+	 * The world generation settings are in level.dat since Minecraft 1.16,
+	 * and in a file of their own since Minecraft 26.1. Older worlds have none.
+	 */
+	private static CompoundTag readWorldGenSettings(CompoundTag dataTag, Path levelDat) throws IOException {
+		CompoundTag result = dataTag.get(NBTTagKeys.TAG_KEY_WORLD_GEN_SETTINGS, CompoundTag.class);
+		if (result != null) {
+			return result;
+		}
+		Path file = levelDat.resolveSibling(NBTTagKeys.WORLD_GEN_SETTINGS_FILE);
+		if (Files.isRegularFile(file)) {
+			return NBTUtils.readTagFromFile(file).get(NBTTagKeys.TAG_KEY_DATA_LOWER_CASE, CompoundTag.class);
+		}
+		return null;
+	}
+
+	private static long readRandomSeed(CompoundTag dataTag, CompoundTag worldGenSettings) {
 		Tag<?> randomSeed = dataTag.get(NBTTagKeys.TAG_KEY_RANDOM_SEED);
 		if (randomSeed != null) {
 			return NBTUtils.getLongValue(randomSeed);
 		}
-		// Minecraft 1.16 format
-		CompoundTag worldGenSettings = dataTag.get(NBTTagKeys.TAG_KEY_WORLD_GEN_SETTINGS, CompoundTag.class);
 		return NBTUtils.getLongValue(worldGenSettings.get(NBTTagKeys.TAG_KEY_SEED));
 	}
 
 	private static CoordinatesInWorld readWorldSpawn(CompoundTag dataTag) {
+		if (!dataTag.containsKey(NBTTagKeys.TAG_KEY_SPAWN_X)) {
+			// Minecraft 26.1 format
+			int[] position = ((IntArrayTag) NBTUtils.getNestedTag(dataTag, NBTTagKeys.TAG_KEY_SPAWN, NBTTagKeys.TAG_KEY_SPAWN_POS)).getValue();
+			return CoordinatesInWorld.from(position[0], position[2]);
+		}
 		return CoordinatesInWorld.from(readSpawnX(dataTag), readSpawnZ(dataTag));
 	}
 
@@ -55,8 +77,8 @@ public class LevelDatNbt {
 		return NBTUtils.getLongValue(dataTag.get(NBTTagKeys.TAG_KEY_SPAWN_Z));
 	}
 
-	private static WorldType readWorldType(CompoundTag dataTag) {
-		WorldType heuristicWorldType = tryGuessWorldType(dataTag);
+	private static WorldType readWorldType(CompoundTag dataTag, CompoundTag worldGenSettings) {
+		WorldType heuristicWorldType = tryGuessWorldType(worldGenSettings);
 		if (heuristicWorldType != null) {
 			return heuristicWorldType;
 		} else if (hasGeneratorName(dataTag)) {
@@ -83,10 +105,10 @@ public class LevelDatNbt {
 	}
 
 	// Try to guess world type from Minecraft 1.16 generator settings
-	private static WorldType tryGuessWorldType(CompoundTag dataTag) {
+	private static WorldType tryGuessWorldType(CompoundTag worldGenSettings) {
 		// Be careful when handling null values, we don't want to trigger unwanted errors
-		Tag<?> generator = NBTUtils.getNestedTag(dataTag,
-			"WorldGenSettings", "dimensions", "minecraft:overworld", "generator");
+		Tag<?> generator = NBTUtils.getNestedTag(worldGenSettings,
+			"dimensions", "minecraft:overworld", "generator");
 
 		Tag<?> generatorType = NBTUtils.getNestedTag(generator, "type");
 		if (new StringTag("minecraft:flat").equals(generatorType)) {
@@ -97,6 +119,9 @@ public class LevelDatNbt {
 			Tag<?> settings = NBTUtils.getNestedTag(generator, "settings");
 			if (new StringTag("minecraft:amplified").equals(settings)) {
 				return WorldType.AMPLIFIED;
+			}
+			if (new StringTag("minecraft:large_biomes").equals(settings)) {
+				return WorldType.LARGE_BIOMES;
 			}
 			Tag<?> largeBiomes = NBTUtils.getNestedTag(generator, "biome_source", "large_biomes");
 			if (new ByteTag(true).equals(largeBiomes)) {

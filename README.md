@@ -39,6 +39,13 @@ Amidst **can**:
   * buried treasures
   * nether fortresses
   * end cities
+  * since Minecraft 26.1 also bastion remnants, nether fossils, ruined portals, ancient cities, trail ruins, trial chambers and abandoned camps
+
+### Minecraft 26.1 and later
+
+Since 26.1, Minecraft ships with readable class names. For these versions, Amidst loads the built-in data pack the way a server does and asks Minecraft itself for biomes, the world spawn and where structures go, so the map follows the multi-noise biomes and structure sets of the selected version. This needs Java 25, like the game. The map shows the surface biomes; cave biomes such as the deep dark are not drawn. Structure icons are at the coordinates that `/locate` reports. Saves of 26.1 and later can be opened, but their players are not shown yet.
+
+Minecraft 1.18 to 1.21.11 are obfuscated and use the new world generation, so Amidst does not support them.
 
 Amidst **cannot**:
 

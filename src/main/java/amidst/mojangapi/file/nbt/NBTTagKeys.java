@@ -16,4 +16,8 @@ public class NBTTagKeys {
 	public static final String TAG_KEY_GENERATOR_OPTIONS = "generatorOptions";
 	public static final String TAG_KEY_WORLD_GEN_SETTINGS = "WorldGenSettings";
 	public static final String TAG_KEY_SEED = "seed";
+	public static final String TAG_KEY_DATA_LOWER_CASE = "data";
+	public static final String TAG_KEY_SPAWN = "spawn";
+	public static final String TAG_KEY_SPAWN_POS = "pos";
+	public static final String WORLD_GEN_SETTINGS_FILE = "data/minecraft/world_gen_settings.dat";
 }

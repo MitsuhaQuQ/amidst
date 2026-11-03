@@ -34,7 +34,13 @@ public enum DefaultWorldIconTypes {
 	OCEAN_RUINS         ("ocean_ruins",       "Ocean Ruins"),
 	SHIPWRECK           ("shipwreck",         "Shipwreck"),
 	BURIED_TREASURE     ("buried_treasure",   "Buried Treasure"),
-	PILLAGER_OUTPOST    ("pillager_outpost",  "Pillager Outpost");
+	PILLAGER_OUTPOST    ("pillager_outpost",  "Pillager Outpost"),
+	NETHER_FOSSIL       ("nether_fossil",     "Nether Fossil"),
+	RUINED_PORTAL       ("ruined_portal",     "Ruined Portal"),
+	ANCIENT_CITY        ("ancient_city",      "Ancient City"),
+	TRAIL_RUINS         ("trail_ruins",       "Trail Ruins"),
+	TRIAL_CHAMBERS      ("trial_chambers",    "Trial Chambers"),
+	ABANDONED_CAMP      ("abandoned_camp",    "Abandoned Camp");
 	// @formatter:on
 
 	private static final Map<String, DefaultWorldIconTypes> typeMap = createTypeMap();

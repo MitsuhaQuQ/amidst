@@ -33,6 +33,17 @@ public class ClassLoaderService {
 		return new URLClassLoader(classLoaderUrls.toArray(new URL[classLoaderUrls.size()]));
 	}
 
+	/**
+	 * Like {@link #createClassLoader(Path, List, Path)}, but the libraries of
+	 * Amidst, such as Gson, do not hide the versions Minecraft brings.
+	 */
+	@NotNull
+	public URLClassLoader createIsolatedClassLoader(Path path, List<LibraryJson> libraries, Path path2)
+			throws MalformedURLException {
+		List<URL> classLoaderUrls = getAllClassLoaderUrls(path, libraries, path2);
+		return new URLClassLoader(classLoaderUrls.toArray(new URL[classLoaderUrls.size()]), ClassLoader.getPlatformClassLoader());
+	}
+
 	@NotNull
 	private List<URL> getAllClassLoaderUrls(Path path, List<LibraryJson> libraries, Path path2)
 			throws MalformedURLException {
@@ -110,10 +121,32 @@ public class ClassLoaderService {
 	}
 
 	private Optional<Path> getLibraryFile(Path path, LibraryJson library) {
+		Optional<Path> mavenFile = getMavenFile(path, library.getName()).filter(Files::isRegularFile);
+		if (mavenFile.isPresent()) {
+			return mavenFile;
+		}
 		return getLibrarySearchFiles(path, library)
 				.filter(f -> hasFileExtension(f, "jar"))
 				.findFirst()
 				.filter(Files::exists);
+	}
+
+	/**
+	 * The file of a library like group:artifact:version[:classifier]. Newer
+	 * versions keep the natives of a library, which have a classifier, in the
+	 * same directory as the library itself.
+	 */
+	private Optional<Path> getMavenFile(Path librariesDirectory, String libraryName) {
+		String[] parts = libraryName.split(":");
+		if (parts.length < 3) {
+			return Optional.empty();
+		}
+		String fileName = parts[1] + "-" + parts[2] + (parts.length > 3 ? "-" + parts[3] : "") + ".jar";
+		Path result = librariesDirectory.toAbsolutePath();
+		for (String directory : parts[0].split("\\.")) {
+			result = result.resolve(directory);
+		}
+		return Optional.of(result.resolve(parts[1]).resolve(parts[2]).resolve(fileName));
 	}
 
 	private Stream<Path> getLibrarySearchFiles(Path path, LibraryJson library) {

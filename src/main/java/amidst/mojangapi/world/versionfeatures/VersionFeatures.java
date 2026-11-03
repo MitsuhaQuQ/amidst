@@ -61,6 +61,14 @@ public class VersionFeatures {
 			return addEntry(key, new Entry<>(Objects.requireNonNull(value)));
 		}
 
+		/**
+		 * Like {@link #withValue}, but replaces a feature that was already set.
+		 */
+		public<T> Builder withOverride(FeatureKey<T> key, T value) {
+			features.put(Objects.requireNonNull(key), new Entry<>(Objects.requireNonNull(value)));
+			return this;
+		}
+
 		@Override
 		public Builder clone() {
 			return new Builder(this);

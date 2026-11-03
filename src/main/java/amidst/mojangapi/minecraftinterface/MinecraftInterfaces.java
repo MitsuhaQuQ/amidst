@@ -23,6 +23,7 @@ import amidst.mojangapi.minecraftinterface.legacy._1_15ClassTranslator;
 import amidst.mojangapi.minecraftinterface.legacy._1_15MinecraftInterface;
 import amidst.mojangapi.minecraftinterface.local.DefaultClassTranslator;
 import amidst.mojangapi.minecraftinterface.local.LocalMinecraftInterface;
+import amidst.mojangapi.minecraftinterface.modern.ModernMinecraftInterface;
 
 public enum MinecraftInterfaces {
     ;
@@ -33,6 +34,13 @@ public enum MinecraftInterfaces {
         try {
             URLClassLoader classLoader = launcherProfile.newClassLoader();
             RecognisedVersion recognisedVersion = RecognisedVersion.from(classLoader);
+            if (RecognisedVersion.isUnobfuscated(classLoader)) {
+                classLoader.close();
+                MinecraftInterface minecraftInterface = ModernMinecraftInterface
+                        .create(launcherProfile.newIsolatedClassLoader(), recognisedVersion);
+                AmidstLogger.info("Minecraft load complete.");
+                return minecraftInterface;
+            }
             Factory factory = fromVersion(recognisedVersion);
             Map<String, SymbolicClass> symbolicClassMap = Classes
                     .createSymbolicClassMap(launcherProfile.getJar(), classLoader, factory.classTranslator);

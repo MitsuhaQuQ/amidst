@@ -95,6 +95,7 @@ public class LayersMenu {
 		overworldLayer(settings.showWoodlandMansions,     "Woodland Mansion Icons", getIcon("woodland_mansion.png"),MenuShortcuts.SHOW_WOODLAND_MANSIONS, dimension, LayerIds.WOODLAND_MANSION);
 		overworldLayer(settings.showOceanFeatures,        "Ocean Features Icons",   getIcon("shipwreck.png"),       MenuShortcuts.SHOW_OCEAN_FEATURES,    dimension, LayerIds.OCEAN_FEATURES);
 		overworldLayer(settings.showNetherFortresses,     "Nether Features Icons",  getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FEATURES,   dimension, LayerIds.NETHER_FEATURES);
+		overworldLayer(settings.showOtherStructures,      "Other Structure Icons",  getIcon("trial_chambers.png"),  MenuShortcuts.SHOW_OTHER_STRUCTURES,  dimension, LayerIds.OTHER_STRUCTURES);
 		// @formatter:on
 	}
 

@@ -1,10 +1,17 @@
 package amidst.mojangapi.minecraftinterface;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import com.google.gson.JsonParser;
 
 import amidst.documentation.Immutable;
 import amidst.documentation.NotNull;
@@ -23,6 +30,13 @@ public enum RecognisedVersion {
 	// TODO: Remove these versions before V1_0?
 	// TODO: stronghold reset on V1_9pre4?
 	UNKNOWN,
+	// Since 26.1, Minecraft is no longer obfuscated, so these versions are recognised by the id in version.json instead of a magic string.
+	_26_3      ("26.3",       "26.3"),                                                                                    // matches the launcher version id: 26.3
+	_26_2      ("26.2",       "26.2"),                                                                                    // matches the launcher version id: 26.2
+	_26_1_2    ("26.1.2",     "26.1.2"),                                                                                  // matches the launcher version id: 26.1.2
+	_26_1_1    ("26.1.1",     "26.1.1"),                                                                                  // matches the launcher version id: 26.1.1
+	_26_1      ("26.1",       "26.1"),                                                                                    // matches the launcher version id: 26.1
+	_1_17_1    ("1.17.1",     "bwudib$adifasiaciwagx$baeh[Jaedadixldhvxoxiaguxkdcq"),                                     // matches the launcher version id: 1.17.1
 	_1_17      ("1.17",       "bwtdib$adifashaciwagx$baeh[Jaedadixldhvxoxiaguxkdcp"),                                     // matches the launcher version id: 1.17-pre1  1.17-pre2  1.17-pre3  1.17-pre4  1.17-pre5  1.17-rc1  1.17-rc2  1.17
 	_21w19a    ("21w19a",     "bwcdhi$adhmarraphaccvvgs$baeb[Jadxadcxgdhcxjxdagnxfdbw"),                                  // matches the launcher version id: 21w19a
 	_21w17a    ("21w17a",     "bwbdhh$adhlarqapgacavtgs$badz[Jadvadaxedhbxhxbaglxddbv"),                                  // matches the launcher version id: 21w17a  21w18a
@@ -278,7 +292,30 @@ public enum RecognisedVersion {
 
 	@NotNull
 	public static String generateMagicString(URLClassLoader classLoader) throws ClassNotFoundException {
+		if (isUnobfuscated(classLoader)) {
+			return readVersionId(classLoader);
+		}
 		return generateMagicString(getMainClassFields(classLoader));
+	}
+
+	/**
+	 * Minecraft has shipped with readable class names since 26.1.
+	 */
+	public static boolean isUnobfuscated(URLClassLoader classLoader) {
+		return classLoader.findResource(UNOBFUSCATED_CLASS_RESOURCE) != null;
+	}
+
+	@NotNull
+	private static String readVersionId(URLClassLoader classLoader) throws ClassNotFoundException {
+		URL versionJson = classLoader.findResource(VERSION_JSON_RESOURCE);
+		if (versionJson == null) {
+			throw new ClassNotFoundException("unable to find " + VERSION_JSON_RESOURCE + " in the given jar file");
+		}
+		try (Reader reader = new InputStreamReader(versionJson.openStream(), StandardCharsets.UTF_8)) {
+			return JsonParser.parseReader(reader).getAsJsonObject().get("id").getAsString();
+		} catch (IOException | RuntimeException e) {
+			throw new ClassNotFoundException("unable to read " + VERSION_JSON_RESOURCE, e);
+		}
 	}
 
 	@NotNull
@@ -407,6 +444,8 @@ public enum RecognisedVersion {
 	private static final String CLIENT_CLASS = "net.minecraft.client.Minecraft";
 	private static final String SERVER_CLASS_RESOURCE = "net/minecraft/server/MinecraftServer.class";
 	private static final String SERVER_CLASS = "net.minecraft.server.MinecraftServer";
+	private static final String UNOBFUSCATED_CLASS_RESOURCE = "net/minecraft/world/level/biome/MultiNoiseBiomeSource.class";
+	private static final String VERSION_JSON_RESOURCE = "version.json";
 
 	private final boolean isKnown;
 	private final String name;

@@ -174,6 +174,8 @@ public enum DefaultVersionFeatures {
 					LayerIds.WOODLAND_MANSION
 				).sinceExtend(RecognisedVersion._18w09a,
 					LayerIds.OCEAN_FEATURES
+				).sinceExtend(RecognisedVersion._26_1,
+					LayerIds.OTHER_STRUCTURES
 				).construct())
 
 			.with(FeatureKey.BIOME_LIST, DefaultBiomes.DEFAULT_BIOMES)
@@ -372,6 +374,9 @@ public enum DefaultVersionFeatures {
 						features.get(DO_COMPLEX_VILLAGE_CHECK),
 						features.get(BUGGY_STRUCTURE_COORDINATE_MATH)
 					)
+				))
+			.with(FeatureKey.VILLAGE_ICON_PRODUCER, VersionFeature.fixed(features ->
+					features.get(FeatureKey.VILLAGE_PRODUCER)
 				))
 			.with(VILLAGE_VALID_BIOMES, VersionFeature.<Integer> listBuilder()
 				.init()
@@ -672,6 +677,9 @@ public enum DefaultVersionFeatures {
 						Dimension.OVERWORLD,
 						false
 					)
+				))
+			.with(FeatureKey.OTHER_STRUCTURES_PRODUCER, VersionFeature.fixed(features ->
+					new NoopProducer<>()
 				))
 			.with(BURIED_TREASURE_VALID_MIDDLE_CHUNK_BIOMES, VersionFeature.<Integer> listBuilder()
 				.init().sinceExtend(RecognisedVersion._18w10d,

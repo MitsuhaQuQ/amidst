@@ -101,6 +101,7 @@ public class LayerBuilder {
 		declare(settings, declarations, enabledLayers, LayerIds.OCEAN_FEATURES,  Dimension.OVERWORLD, false, settings.showOceanFeatures);
 		declare(settings, declarations, enabledLayers, LayerIds.NETHER_FEATURES, Dimension.OVERWORLD, false, settings.showNetherFortresses);
 		declare(settings, declarations, enabledLayers, LayerIds.END_CITY,        Dimension.END,       false, settings.showEndCities);
+		declare(settings, declarations, enabledLayers, LayerIds.OTHER_STRUCTURES,Dimension.OVERWORLD, false, settings.showOtherStructures);
 		// @formatter:on
 		return Collections.unmodifiableList(Arrays.asList(declarations));
 	}
@@ -146,6 +147,7 @@ public class LayerBuilder {
 				new WorldIconLoader<>(declarations.get(LayerIds.WOODLAND_MANSION),world.getWoodlandMansionProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.OCEAN_FEATURES),  world.getOceanFeaturesProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.NETHER_FEATURES), world.getNetherFortressProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.OTHER_STRUCTURES),world.getOtherStructuresProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.END_CITY),        world.getEndCityProducer(), Fragment::getEndIslands)
 		));
 		// @formatter:on
@@ -176,6 +178,7 @@ public class LayerBuilder {
 				new WorldIconDrawer(declarations.get(LayerIds.WOODLAND_MANSION),zoom, worldIconSelection, settings.useHybridScaling),
 				new WorldIconDrawer(declarations.get(LayerIds.OCEAN_FEATURES),  zoom, worldIconSelection, settings.useHybridScaling),
 				new WorldIconDrawer(declarations.get(LayerIds.NETHER_FEATURES), zoom, worldIconSelection, settings.useHybridScaling),
+				new WorldIconDrawer(declarations.get(LayerIds.OTHER_STRUCTURES),zoom, worldIconSelection, settings.useHybridScaling),
 				new WorldIconDrawer(declarations.get(LayerIds.END_CITY),        zoom, worldIconSelection, settings.useHybridScaling)
 		));
 		// @formatter:on
