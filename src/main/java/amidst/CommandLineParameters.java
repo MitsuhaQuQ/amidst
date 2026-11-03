@@ -135,7 +135,11 @@ public class CommandLineParameters {
 
 	public Optional<LauncherProfile> getInitialLauncherProfile(MinecraftInstallation minecraftInstallation) {
 	    if (mtmJarFile != null || mtmGameDirectory != null) {
-	        return Optional.of(MtmLauncherProfile.create(mtmJarFile, mtmGameDirectory));
+	        return Optional.of(MtmLauncherProfile.create(mtmJarFile != null ? mtmJarFile : bundledMtmJar(), mtmGameDirectory));
+	    }
+	    // The packaged app ships the mod jar and starts on it, unless told to use Minecraft instead
+	    if (bundledMtmJar() != null && profileName == null && minecraftJarFile == null) {
+	        return Optional.of(MtmLauncherProfile.create(bundledMtmJar(), null));
 	    }
 	    if (profileName != null) {
 	        return minecraftInstallation.tryGetLauncherProfileFromName(profileName);
@@ -145,6 +149,14 @@ public class CommandLineParameters {
 	    }
 	    return Optional.empty();
 	}
+
+	/** The MTM Worldgen jar shipped with the packaged app, which names it in this system property. */
+	private static Path bundledMtmJar() {
+	    String jar = System.getProperty(BUNDLED_MTM_JAR_PROPERTY);
+	    return jar == null || jar.isEmpty() ? null : Path.of(jar);
+	}
+
+	private static final String BUNDLED_MTM_JAR_PROPERTY = "amidst.mtmjar";
 
 	public static class SeedHandler extends OptionHandler<WorldSeed> {
 	    public SeedHandler(CmdLineParser cmdLineParser, OptionDef optionDef, Setter<WorldSeed> setter) {

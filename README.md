@@ -57,6 +57,8 @@ This fork also shows worlds of the MTM Worldgen mod. It runs the terrain logic s
 java -jar amidst.jar -mtmgamedir <game directory> [-mtmjar <mtm_worldgen jar>]
 ```
 
+On Windows, the release zip `AMIDST-MTM-<version>-windows.zip` needs no Java or Minecraft: unpack it and run `AMIDST-MTM.exe`. It ships its own Java runtime and a jar of MTM Worldgen, which it uses unless `-mtmjar`, `-profile` or `-mcjar` is given. `scripts/package-mtm-windows.ps1 -MtmJar <mtm_worldgen jar>` builds it after `mvn package`.
+
 * The game directory provides `saves/`, `config/mtm_worldgen.json` and, unless `-mtmjar` is given, the jar in `mods/`.
 * Opened saves use the settings locked in their `level.dat`. Worlds from a seed use the config file, or the defaults of the mod.
 * A launcher profile with MTM Worldgen in its mods folder also switches to MTM worlds.
