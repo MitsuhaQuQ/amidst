@@ -31,6 +31,7 @@ if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
 New-Item -ItemType Directory -Force "$outDir\AMIDST-MTM\app\mods" | Out-Null
 Copy-Item $MtmJar "$outDir\AMIDST-MTM\app\mods\$mtmName"
 
-$zip = Join-Path $outDir "AMIDST-MTM-$version-windows.zip"
+$mtmVersion = [regex]::Match($mtmName, "-(\d[^-]*)\.jar$").Groups[1].Value
+$zip = Join-Path $outDir "AMIDST-MTM-$version-mtm$mtmVersion-windows.zip"
 Compress-Archive -Path "$outDir\AMIDST-MTM" -DestinationPath $zip
 Write-Output $zip
