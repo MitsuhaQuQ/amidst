@@ -39,9 +39,10 @@ public class ModernBiomesTest {
 	@Test
 	public void shouldListAllBiomes() throws Exception {
 		BiomeList list = ModernBiomes.createBiomeList(ModernBiomes.assignIds(Arrays.asList(
-				"minecraft:pale_garden", "minecraft:deep_dark")));
+				"minecraft:pale_garden", "minecraft:deep_dark", "minecraft:ice_caves")));
 		Assert.assertEquals("Pale Garden", list.getById(185).getName());
 		Assert.assertEquals("Deep Dark", list.getById(182).getName());
+		Assert.assertEquals("Ice Caves", list.getById(188).getName());
 	}
 
 	@Test

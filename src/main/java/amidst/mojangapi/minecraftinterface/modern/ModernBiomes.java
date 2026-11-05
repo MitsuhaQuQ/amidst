@@ -98,6 +98,8 @@ public enum ModernBiomes {
 		// 26.x
 		{ "dappled_forest",          186, BiomeType.PLAINS },
 		{ "sulfur_caves",            187, BiomeType.PLAINS },
+		// 26.4
+		{ "ice_caves",               188, BiomeType.PLAINS },
 	};
 	// @formatter:on
 
