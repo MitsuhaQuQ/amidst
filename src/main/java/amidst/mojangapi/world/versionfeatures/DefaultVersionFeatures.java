@@ -174,9 +174,18 @@ public enum DefaultVersionFeatures {
 					LayerIds.WOODLAND_MANSION
 				).sinceExtend(RecognisedVersion._18w09a,
 					LayerIds.OCEAN_FEATURES
+				).sinceExtend(RecognisedVersion._20w16a,
+					LayerIds.BASTION_REMNANTS
 				).sinceExtend(RecognisedVersion._1_18,
-					LayerIds.OTHER_STRUCTURES
-				).construct())
+					LayerIds.RUINED_PORTALS,
+					LayerIds.ANCIENT_CITIES,
+					LayerIds.TRIAL_CHAMBERS,
+					LayerIds.TRAIL_RUINS,
+					LayerIds.ABANDONED_CAMPS
+				).construct().andThenFixed((features, layers) -> layers.stream()
+						.filter(features.get(FeatureKey.LAYER_FILTER))
+						.collect(Collectors.toList())))
+			.with(FeatureKey.LAYER_FILTER, VersionFeature.constant(layerId -> true))
 
 			.with(FeatureKey.BIOME_LIST, DefaultBiomes.DEFAULT_BIOMES)
 			.with(FeatureKey.END_ISLAND_ORACLE, VersionFeature.fixed(features ->
@@ -678,9 +687,11 @@ public enum DefaultVersionFeatures {
 						false
 					)
 				))
-			.with(FeatureKey.OTHER_STRUCTURES_PRODUCER, VersionFeature.fixed(features ->
-					new NoopProducer<>()
-				))
+			.with(FeatureKey.RUINED_PORTAL_PRODUCER,  VersionFeature.fixed(features -> new NoopProducer<>()))
+			.with(FeatureKey.ANCIENT_CITY_PRODUCER,   VersionFeature.fixed(features -> new NoopProducer<>()))
+			.with(FeatureKey.TRIAL_CHAMBERS_PRODUCER, VersionFeature.fixed(features -> new NoopProducer<>()))
+			.with(FeatureKey.TRAIL_RUINS_PRODUCER,    VersionFeature.fixed(features -> new NoopProducer<>()))
+			.with(FeatureKey.ABANDONED_CAMP_PRODUCER, VersionFeature.fixed(features -> new NoopProducer<>()))
 			.with(BURIED_TREASURE_VALID_MIDDLE_CHUNK_BIOMES, VersionFeature.<Integer> listBuilder()
 				.init().sinceExtend(RecognisedVersion._18w10d,
 					DefaultBiomes.beach,

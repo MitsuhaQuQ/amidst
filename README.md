@@ -31,7 +31,7 @@ Amidst **can**:
   * buried treasures
   * nether fortresses
   * end cities
-  * since Minecraft 1.18 also bastion remnants, nether fossils, ruined portals, ancient cities, trail ruins, trial chambers and abandoned camps, as far as the version has them
+  * since Minecraft 1.18 also bastion remnants, nether fossils, ruined portals, ancient cities, trail ruins, trial chambers and abandoned camps, each on a layer of its own (nether fossils go with the nether fortresses), as far as the version has them
 
 ### Minecraft 1.18 and later
 

@@ -2,6 +2,7 @@ package amidst.mojangapi.world.versionfeatures;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import amidst.documentation.Immutable;
 import amidst.mojangapi.world.WorldOptions;
@@ -47,7 +48,13 @@ public class FeatureKey<T> {
 	public static final FeatureKey<WorldIconProducer<Void>> SHIPWRECK_PRODUCER               = make();
 	public static final FeatureKey<WorldIconProducer<Void>> BURIED_TREASURE_PRODUCER         = make();
 	// Structures that Amidst only knows from Minecraft itself, such as ancient cities and trial chambers
-	public static final FeatureKey<WorldIconProducer<Void>> OTHER_STRUCTURES_PRODUCER        = make();
+	public static final FeatureKey<WorldIconProducer<Void>> RUINED_PORTAL_PRODUCER           = make();
+	public static final FeatureKey<WorldIconProducer<Void>> ANCIENT_CITY_PRODUCER            = make();
+	public static final FeatureKey<WorldIconProducer<Void>> TRIAL_CHAMBERS_PRODUCER          = make();
+	public static final FeatureKey<WorldIconProducer<Void>> TRAIL_RUINS_PRODUCER             = make();
+	public static final FeatureKey<WorldIconProducer<Void>> ABANDONED_CAMP_PRODUCER          = make();
+	// Leaves out the layers of structures that the loaded version does not have
+	public static final FeatureKey<Predicate<Integer>>      LAYER_FILTER                     = make();
 	// @formatter:on
 
 

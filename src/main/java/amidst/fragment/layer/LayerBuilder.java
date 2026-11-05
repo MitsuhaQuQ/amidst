@@ -101,7 +101,12 @@ public class LayerBuilder {
 		declare(settings, declarations, enabledLayers, LayerIds.OCEAN_FEATURES,  Dimension.OVERWORLD, false, settings.showOceanFeatures);
 		declare(settings, declarations, enabledLayers, LayerIds.NETHER_FEATURES, Dimension.OVERWORLD, false, settings.showNetherFortresses);
 		declare(settings, declarations, enabledLayers, LayerIds.END_CITY,        Dimension.END,       false, settings.showEndCities);
-		declare(settings, declarations, enabledLayers, LayerIds.OTHER_STRUCTURES,Dimension.OVERWORLD, false, settings.showOtherStructures);
+		declare(settings, declarations, enabledLayers, LayerIds.BASTION_REMNANTS,Dimension.OVERWORLD, false, settings.showBastionRemnants);
+		declare(settings, declarations, enabledLayers, LayerIds.RUINED_PORTALS,  Dimension.OVERWORLD, false, settings.showRuinedPortals);
+		declare(settings, declarations, enabledLayers, LayerIds.ANCIENT_CITIES,  Dimension.OVERWORLD, false, settings.showAncientCities);
+		declare(settings, declarations, enabledLayers, LayerIds.TRIAL_CHAMBERS,  Dimension.OVERWORLD, false, settings.showTrialChambers);
+		declare(settings, declarations, enabledLayers, LayerIds.TRAIL_RUINS,     Dimension.OVERWORLD, false, settings.showTrailRuins);
+		declare(settings, declarations, enabledLayers, LayerIds.ABANDONED_CAMPS, Dimension.OVERWORLD, false, settings.showAbandonedCamps);
 		// @formatter:on
 		return Collections.unmodifiableList(Arrays.asList(declarations));
 	}
@@ -147,7 +152,12 @@ public class LayerBuilder {
 				new WorldIconLoader<>(declarations.get(LayerIds.WOODLAND_MANSION),world.getWoodlandMansionProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.OCEAN_FEATURES),  world.getOceanFeaturesProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.NETHER_FEATURES), world.getNetherFortressProducer()),
-				new WorldIconLoader<>(declarations.get(LayerIds.OTHER_STRUCTURES),world.getOtherStructuresProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.BASTION_REMNANTS),world.getBastionRemnantProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.RUINED_PORTALS),  world.getRuinedPortalProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.ANCIENT_CITIES),  world.getAncientCityProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.TRIAL_CHAMBERS),  world.getTrialChambersProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.TRAIL_RUINS),     world.getTrailRuinsProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.ABANDONED_CAMPS), world.getAbandonedCampProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.END_CITY),        world.getEndCityProducer(), Fragment::getEndIslands)
 		));
 		// @formatter:on
@@ -178,7 +188,12 @@ public class LayerBuilder {
 				new WorldIconDrawer(declarations.get(LayerIds.WOODLAND_MANSION),zoom, worldIconSelection, settings.useHybridScaling),
 				new WorldIconDrawer(declarations.get(LayerIds.OCEAN_FEATURES),  zoom, worldIconSelection, settings.useHybridScaling),
 				new WorldIconDrawer(declarations.get(LayerIds.NETHER_FEATURES), zoom, worldIconSelection, settings.useHybridScaling),
-				new WorldIconDrawer(declarations.get(LayerIds.OTHER_STRUCTURES),zoom, worldIconSelection, settings.useHybridScaling),
+				new WorldIconDrawer(declarations.get(LayerIds.BASTION_REMNANTS),zoom, worldIconSelection, settings.useHybridScaling),
+				new WorldIconDrawer(declarations.get(LayerIds.RUINED_PORTALS),  zoom, worldIconSelection, settings.useHybridScaling),
+				new WorldIconDrawer(declarations.get(LayerIds.ANCIENT_CITIES),  zoom, worldIconSelection, settings.useHybridScaling),
+				new WorldIconDrawer(declarations.get(LayerIds.TRIAL_CHAMBERS),  zoom, worldIconSelection, settings.useHybridScaling),
+				new WorldIconDrawer(declarations.get(LayerIds.TRAIL_RUINS),     zoom, worldIconSelection, settings.useHybridScaling),
+				new WorldIconDrawer(declarations.get(LayerIds.ABANDONED_CAMPS), zoom, worldIconSelection, settings.useHybridScaling),
 				new WorldIconDrawer(declarations.get(LayerIds.END_CITY),        zoom, worldIconSelection, settings.useHybridScaling)
 		));
 		// @formatter:on

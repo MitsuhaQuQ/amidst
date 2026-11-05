@@ -26,7 +26,12 @@ public class LayerIds {
 	public static final int OCEAN_FEATURES       = 14; 
 	public static final int NETHER_FEATURES      = 15;
 	public static final int END_CITY             = 16;
-	public static final int OTHER_STRUCTURES     = 17;
-	public static final int NUMBER_OF_LAYERS     = 18;
+	public static final int RUINED_PORTALS       = 17;
+	public static final int ANCIENT_CITIES       = 18;
+	public static final int TRIAL_CHAMBERS       = 19;
+	public static final int TRAIL_RUINS          = 20;
+	public static final int ABANDONED_CAMPS      = 21;
+	public static final int BASTION_REMNANTS     = 22;
+	public static final int NUMBER_OF_LAYERS     = 23;
 	// @formatter:on
 }

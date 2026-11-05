@@ -20,6 +20,7 @@ import amidst.mojangapi.minecraftinterface.modern.Mc.McException;
 import amidst.mojangapi.minecraftinterface.modern.WorldgenApi.NoiseBiomes;
 import amidst.mojangapi.minecraftinterface.modern.WorldgenApi.Resolver;
 import amidst.mojangapi.minecraftinterface.modern.WorldgenApi.Stem;
+import amidst.fragment.layer.LayerIds;
 import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.WorldOptions;
 import amidst.mojangapi.world.WorldType;
@@ -176,17 +177,42 @@ public class ModernMinecraftInterface implements MinecraftInterface {
 		features.withOverride(FeatureKey.OCEAN_RUINS_PRODUCER, overworldStructures(overworld, DefaultWorldIconTypes.OCEAN_RUINS));
 		features.withOverride(FeatureKey.SHIPWRECK_PRODUCER, overworldStructures(overworld, DefaultWorldIconTypes.SHIPWRECK));
 		features.withOverride(FeatureKey.BURIED_TREASURE_PRODUCER, overworldStructures(overworld, DefaultWorldIconTypes.BURIED_TREASURE));
-		features.withOverride(FeatureKey.OTHER_STRUCTURES_PRODUCER, overworldStructures(overworld,
-				DefaultWorldIconTypes.ANCIENT_CITY,
-				DefaultWorldIconTypes.TRIAL_CHAMBERS,
-				DefaultWorldIconTypes.TRAIL_RUINS,
-				DefaultWorldIconTypes.RUINED_PORTAL,
-				DefaultWorldIconTypes.ABANDONED_CAMP));
-		features.withOverride(FeatureKey.NETHER_FORTRESS_PRODUCER, new MultiProducer<>(
-				new ModernStructures.Producer(nether, Dimension.NETHER, DefaultWorldIconTypes.NETHER_FORTRESS),
-				new ModernStructures.Producer(nether, Dimension.NETHER, DefaultWorldIconTypes.NETHER_FOSSIL, DefaultWorldIconTypes.RUINED_PORTAL)));
+		features.withOverride(FeatureKey.ANCIENT_CITY_PRODUCER, overworldStructures(overworld, DefaultWorldIconTypes.ANCIENT_CITY));
+		features.withOverride(FeatureKey.TRIAL_CHAMBERS_PRODUCER, overworldStructures(overworld, DefaultWorldIconTypes.TRIAL_CHAMBERS));
+		features.withOverride(FeatureKey.TRAIL_RUINS_PRODUCER, overworldStructures(overworld, DefaultWorldIconTypes.TRAIL_RUINS));
+		features.withOverride(FeatureKey.ABANDONED_CAMP_PRODUCER, overworldStructures(overworld, DefaultWorldIconTypes.ABANDONED_CAMP));
+		// The ruined portals of both dimensions share a layer
+		features.withOverride(FeatureKey.RUINED_PORTAL_PRODUCER, new MultiProducer<>(
+				overworldStructures(overworld, DefaultWorldIconTypes.RUINED_PORTAL),
+				new ModernStructures.Producer(nether, Dimension.NETHER, DefaultWorldIconTypes.RUINED_PORTAL)));
+		features.withOverride(FeatureKey.NETHER_FORTRESS_PRODUCER,
+				new ModernStructures.Producer(nether, Dimension.NETHER, DefaultWorldIconTypes.NETHER_FORTRESS, DefaultWorldIconTypes.NETHER_FOSSIL));
 		features.withOverride(FeatureKey.BASTION_REMNANT_PRODUCER,
 				new ModernStructures.Producer(nether, Dimension.NETHER, DefaultWorldIconTypes.BASTION_REMNANT));
+		features.withOverride(FeatureKey.LAYER_FILTER, layerId -> hasStructuresOf(layerId, overworld, nether));
+	}
+
+	/**
+	 * Whether the loaded version places the structures of a layer, so the
+	 * layers of structures added after 1.18 are only offered where they exist.
+	 */
+	private static boolean hasStructuresOf(int layerId, ModernDimension overworld, ModernDimension nether) {
+		switch (layerId) {
+		case LayerIds.RUINED_PORTALS:
+			return overworld.hasStructures(DefaultWorldIconTypes.RUINED_PORTAL) || nether.hasStructures(DefaultWorldIconTypes.RUINED_PORTAL);
+		case LayerIds.ANCIENT_CITIES:
+			return overworld.hasStructures(DefaultWorldIconTypes.ANCIENT_CITY);
+		case LayerIds.TRIAL_CHAMBERS:
+			return overworld.hasStructures(DefaultWorldIconTypes.TRIAL_CHAMBERS);
+		case LayerIds.TRAIL_RUINS:
+			return overworld.hasStructures(DefaultWorldIconTypes.TRAIL_RUINS);
+		case LayerIds.ABANDONED_CAMPS:
+			return overworld.hasStructures(DefaultWorldIconTypes.ABANDONED_CAMP);
+		case LayerIds.BASTION_REMNANTS:
+			return nether.hasStructures(DefaultWorldIconTypes.BASTION_REMNANT);
+		default:
+			return true;
+		}
 	}
 
 	private static ModernStructures.Producer overworldStructures(ModernDimension overworld, DefaultWorldIconTypes... types) {

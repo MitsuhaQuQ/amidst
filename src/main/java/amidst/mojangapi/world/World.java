@@ -37,7 +37,12 @@ public class World {
 	private final WorldIconProducer<Void> woodlandMansionProducer;
 	private final WorldIconProducer<Void> oceanFeaturesProducer;
 	private final WorldIconProducer<Void> netherFortressProducer;
-	private final WorldIconProducer<Void> otherStructuresProducer;
+	private final WorldIconProducer<Void> bastionRemnantProducer;
+	private final WorldIconProducer<Void> ruinedPortalProducer;
+	private final WorldIconProducer<Void> ancientCityProducer;
+	private final WorldIconProducer<Void> trialChambersProducer;
+	private final WorldIconProducer<Void> trailRuinsProducer;
+	private final WorldIconProducer<Void> abandonedCampProducer;
 	private final WorldIconProducer<List<EndIsland>> endCityProducer;
 
 	public World(
@@ -60,7 +65,12 @@ public class World {
 			WorldIconProducer<Void> woodlandMansionProducer,
 			WorldIconProducer<Void> oceanFeaturesProducer,
 			WorldIconProducer<Void> netherFortressProducer,
-			WorldIconProducer<Void> otherStructuresProducer,
+			WorldIconProducer<Void> bastionRemnantProducer,
+			WorldIconProducer<Void> ruinedPortalProducer,
+			WorldIconProducer<Void> ancientCityProducer,
+			WorldIconProducer<Void> trialChambersProducer,
+			WorldIconProducer<Void> trailRuinsProducer,
+			WorldIconProducer<Void> abandonedCampProducer,
 			WorldIconProducer<List<EndIsland>> endCityProducer) {
 		this.worldOptions = worldOptions;
 		this.movablePlayerList = movablePlayerList;
@@ -81,7 +91,12 @@ public class World {
 		this.woodlandMansionProducer = woodlandMansionProducer;
 		this.oceanFeaturesProducer = oceanFeaturesProducer;
 		this.netherFortressProducer = netherFortressProducer;
-		this.otherStructuresProducer = otherStructuresProducer;
+		this.bastionRemnantProducer = bastionRemnantProducer;
+		this.ruinedPortalProducer = ruinedPortalProducer;
+		this.ancientCityProducer = ancientCityProducer;
+		this.trialChambersProducer = trialChambersProducer;
+		this.trailRuinsProducer = trailRuinsProducer;
+		this.abandonedCampProducer = abandonedCampProducer;
 		this.endCityProducer = endCityProducer;
 	}
 
@@ -153,8 +168,28 @@ public class World {
 		return netherFortressProducer;
 	}
 
-	public WorldIconProducer<Void> getOtherStructuresProducer() {
-		return otherStructuresProducer;
+	public WorldIconProducer<Void> getBastionRemnantProducer() {
+		return bastionRemnantProducer;
+	}
+
+	public WorldIconProducer<Void> getRuinedPortalProducer() {
+		return ruinedPortalProducer;
+	}
+
+	public WorldIconProducer<Void> getAncientCityProducer() {
+		return ancientCityProducer;
+	}
+
+	public WorldIconProducer<Void> getTrialChambersProducer() {
+		return trialChambersProducer;
+	}
+
+	public WorldIconProducer<Void> getTrailRuinsProducer() {
+		return trailRuinsProducer;
+	}
+
+	public WorldIconProducer<Void> getAbandonedCampProducer() {
+		return abandonedCampProducer;
 	}
 
 	public WorldIconProducer<List<EndIsland>> getEndCityProducer() {

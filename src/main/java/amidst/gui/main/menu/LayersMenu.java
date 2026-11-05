@@ -95,7 +95,12 @@ public class LayersMenu {
 		overworldLayer(settings.showWoodlandMansions,     "Woodland Mansion Icons", getIcon("woodland_mansion.png"),MenuShortcuts.SHOW_WOODLAND_MANSIONS, dimension, LayerIds.WOODLAND_MANSION);
 		overworldLayer(settings.showOceanFeatures,        "Ocean Features Icons",   getIcon("shipwreck.png"),       MenuShortcuts.SHOW_OCEAN_FEATURES,    dimension, LayerIds.OCEAN_FEATURES);
 		overworldLayer(settings.showNetherFortresses,     "Nether Features Icons",  getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FEATURES,   dimension, LayerIds.NETHER_FEATURES);
-		overworldLayer(settings.showOtherStructures,      "Other Structure Icons",  getIcon("trial_chambers.png"),  MenuShortcuts.SHOW_OTHER_STRUCTURES,  dimension, LayerIds.OTHER_STRUCTURES);
+		overworldLayer(settings.showBastionRemnants,      "Bastion Remnant Icons",  getIcon("bastion_remnant.png"), null,                                 dimension, LayerIds.BASTION_REMNANTS);
+		overworldLayer(settings.showRuinedPortals,        "Ruined Portal Icons",    getIcon("ruined_portal.png"),   null,                                 dimension, LayerIds.RUINED_PORTALS);
+		overworldLayer(settings.showAncientCities,        "Ancient City Icons",     getIcon("ancient_city.png"),    null,                                 dimension, LayerIds.ANCIENT_CITIES);
+		overworldLayer(settings.showTrialChambers,        "Trial Chambers Icons",   getIcon("trial_chambers.png"),  null,                                 dimension, LayerIds.TRIAL_CHAMBERS);
+		overworldLayer(settings.showTrailRuins,           "Trail Ruins Icons",      getIcon("trail_ruins.png"),     null,                                 dimension, LayerIds.TRAIL_RUINS);
+		overworldLayer(settings.showAbandonedCamps,       "Abandoned Camp Icons",   getIcon("abandoned_camp.png"),  null,                                 dimension, LayerIds.ABANDONED_CAMPS);
 		// @formatter:on
 	}
 
@@ -115,7 +120,15 @@ public class LayersMenu {
 			MenuShortcut menuShortcut,
 			Dimension dimension,
 			int layerId) {
+		if (isOnlyForNewerVersions(layerId) && !viewerFacade.hasLayer(layerId)) {
+			// The structures since 1.18 are only listed for the versions that have them
+			return;
+		}
 		overworldMenuItems.add(createLayer(setting, text, icon, menuShortcut, dimension, layerId));
+	}
+
+	private static boolean isOnlyForNewerVersions(int layerId) {
+		return layerId >= LayerIds.RUINED_PORTALS;
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
@@ -137,7 +150,10 @@ public class LayersMenu {
 			MenuShortcut menuShortcut,
 			Dimension dimension,
 			int layerId) {
-		return  Menus.checkbox(menu, setting, text, icon, menuShortcut);
+		if (menuShortcut == null) {
+			return Menus.checkbox(menu, setting, text, icon);
+		}
+		return Menus.checkbox(menu, setting, text, icon, menuShortcut);
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)

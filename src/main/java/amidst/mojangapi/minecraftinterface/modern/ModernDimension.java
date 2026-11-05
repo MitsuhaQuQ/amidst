@@ -171,6 +171,18 @@ public class ModernDimension {
 		return api.originChunk(this);
 	}
 
+	/**
+	 * Whether this dimension places any structure of the given type.
+	 */
+	public boolean hasStructures(DefaultWorldIconTypes type) {
+		for (StructureSet set : structureSets) {
+			if (set.types.contains(type)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public List<ConcentricRings> getConcentricRings(Set<DefaultWorldIconTypes> types) {
 		List<ConcentricRings> result = new ArrayList<>();
 		for (StructureSet set : structureSets) {

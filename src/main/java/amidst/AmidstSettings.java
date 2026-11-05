@@ -28,7 +28,12 @@ public class AmidstSettings {
 	public final Setting<Boolean> showOceanFeatures;
 	public final Setting<Boolean> showNetherFortresses;
 	public final Setting<Boolean> showEndCities;
-	public final Setting<Boolean> showOtherStructures;
+	public final Setting<Boolean> showBastionRemnants;
+	public final Setting<Boolean> showRuinedPortals;
+	public final Setting<Boolean> showAncientCities;
+	public final Setting<Boolean> showTrialChambers;
+	public final Setting<Boolean> showTrailRuins;
+	public final Setting<Boolean> showAbandonedCamps;
 
 	public final Setting<Boolean> smoothScrolling;
 	public final Setting<Boolean> fragmentFading;
@@ -68,7 +73,12 @@ public class AmidstSettings {
 		showOceanFeatures          = Setting.createBoolean(  preferences, "oceanFeaturesIcons",   true);
 		showNetherFortresses       = Setting.createBoolean(  preferences, "netherFortressIcons",  false);
 		showEndCities              = Setting.createBoolean(  preferences, "endCityIcons",         false);
-		showOtherStructures        = Setting.createBoolean(  preferences, "otherStructureIcons",  true);
+		showBastionRemnants        = Setting.createBoolean(  preferences, "bastionRemnantIcons",  false);
+		showRuinedPortals          = Setting.createBoolean(  preferences, "ruinedPortalIcons",    false);
+		showAncientCities          = Setting.createBoolean(  preferences, "ancientCityIcons",     true);
+		showTrialChambers          = Setting.createBoolean(  preferences, "trialChamberIcons",    true);
+		showTrailRuins             = Setting.createBoolean(  preferences, "trailRuinsIcons",      true);
+		showAbandonedCamps         = Setting.createBoolean(  preferences, "abandonedCampIcons",   true);
 
 		smoothScrolling            = Setting.createBoolean(  preferences, "mapFlicking",          true);
 		fragmentFading             = Setting.createBoolean(  preferences, "mapFading",            true);
