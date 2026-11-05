@@ -48,12 +48,12 @@ public class ModernDimension {
 		this.seed = seed;
 		this.generator = mc.call(levelStem, "generator");
 		this.biomeSource = mc.call(generator, "getBiomeSource");
-		this.randomState = createRandomState();
-		this.structureState = mc.call(generator, "createState", registry("STRUCTURE_SET"), randomState, seed);
-		mc.call(structureState, "ensureStructuresGenerated");
 		Object dimensionType = mc.call(mc.call(levelStem, "type"), "value");
 		this.heightAccessor = mc.callStatic("net.minecraft.world.level.LevelHeightAccessor", "create",
 				mc.call(dimensionType, "minY"), mc.call(dimensionType, "height"));
+		this.randomState = createRandomState();
+		this.structureState = mc.call(generator, "createState", registry("STRUCTURE_SET"), randomState, seed);
+		mc.call(structureState, "ensureStructuresGenerated");
 		this.structureSets = readStructureSets();
 		this.climateSampler = ThreadLocal.withInitial(() -> mc.call(randomState, "createClimateSampler",
 				mc.call(mc.call(mc.callStatic("net.minecraft.world.level.levelgen.densityfunction.SamplerContext", "builder"),
@@ -69,7 +69,10 @@ public class ModernDimension {
 	 */
 	private Object createRandomState() {
 		String randomState = "net.minecraft.world.level.levelgen.RandomState";
-		if (mc.type(NOISE_BASED_GENERATOR).isInstance(generator)) {
+		if (mc.hasMethod(randomState, "createForGenerator")) {
+			// Since 26.4, Minecraft decides itself how a generator gets its noise
+			return mc.callStatic(randomState, "createForGenerator", registry("NOISE"), seed, generator, heightAccessor);
+		} else if (mc.type(NOISE_BASED_GENERATOR).isInstance(generator)) {
 			return mc.callStatic(randomState, "create",
 					registry("NOISE"), seed, mc.call(mc.call(generator, "generatorSettings"), "value"));
 		} else {

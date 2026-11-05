@@ -96,7 +96,12 @@ public class ModernMinecraftInterface implements MinecraftInterface {
 		this.registryAccess = loadWorldRegistries();
 		this.biomeIds = ModernBiomes.assignIds(readBiomeKeys());
 		this.biomeList = ModernBiomes.createBiomeList(biomeIds);
-		this.getNoiseBiome = mc.handle("net.minecraft.world.level.biome.BiomeResolver", "getNoiseBiome", int.class, int.class, int.class);
+		// 26.4 moved the noise biomes from BiomeResolver to NoiseBiomeResolver
+		String noiseBiomeResolver = "net.minecraft.world.level.biome.NoiseBiomeResolver";
+		if (!mc.hasType(noiseBiomeResolver)) {
+			noiseBiomeResolver = "net.minecraft.world.level.biome.BiomeResolver";
+		}
+		this.getNoiseBiome = mc.handle(noiseBiomeResolver, "getNoiseBiome", int.class, int.class, int.class);
 		this.getBiome = mc.handle("net.minecraft.world.level.biome.BiomeManager", "getBiome", int.class, int.class, int.class);
 	}
 
