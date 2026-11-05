@@ -314,6 +314,12 @@ public class BiomeWidget extends Widget {
 		}
 	}
 
+	/**
+	 * Choosing biomes turns the highlighting on, so the map shows the choice
+	 * right away instead of waiting for a click on the Inactive label.
+	 *
+	 * @return whether the map has to be drawn again
+	 */
 	@CalledOnlyBy(AmidstThread.EDT)
 	private boolean processClick(int mouseX, int mouseY) {
 		if (isInBoundsOfInnerBox(mouseX, mouseY)) {
@@ -321,7 +327,7 @@ public class BiomeWidget extends Widget {
 			if (id < biomes.size()) {
 				int index = biomes.get(id).getId();
 				biomeSelection.toggle(index);
-				return biomeSelection.isHighlightMode();
+				return activateHighlightMode();
 			}
 		} else if (isActiveButton(mouseX, mouseY)) {
 			biomeSelection.toggleHighlightMode();
@@ -332,13 +338,21 @@ public class BiomeWidget extends Widget {
 				return biomeSelection.isHighlightMode();
 			} else if (isSelectSpecialBiomesButton(mouseX)) {
 				selectOnlySpecialBiomes();
-				return biomeSelection.isHighlightMode();
+				return activateHighlightMode();
 			} else if (isDeselectAllButton(mouseX)) {
 				biomeSelection.deselectAll();
-				return biomeSelection.isHighlightMode();
+				return activateHighlightMode();
 			}
 		}
 		return false;
+	}
+
+	@CalledOnlyBy(AmidstThread.EDT)
+	private boolean activateHighlightMode() {
+		if (!biomeSelection.isHighlightMode()) {
+			biomeSelection.toggleHighlightMode();
+		}
+		return true;
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
