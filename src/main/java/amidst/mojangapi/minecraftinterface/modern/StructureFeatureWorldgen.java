@@ -183,9 +183,14 @@ class StructureFeatureWorldgen extends WorldgenApi {
 						return key.isPresent() && biomeKeys.contains(key.get());
 					};
 			try {
-				Object start = mc.call(entry.holder, "generate",
-						dimension.getRegistryAccess(), dimension.getGenerator(), dimension.getBiomeSource(), dimension.getTemplateManager(),
-						dimension.getSeed(), chunkPos, 0, set.extra, dimension.getHeightAccessor(), validBiome);
+				// The structure templates are not thread-safe, so the pieces are built one structure at a time
+				Object templateManager = dimension.getTemplateManager();
+				Object start;
+				synchronized (templateManager) {
+					start = mc.call(entry.holder, "generate",
+							dimension.getRegistryAccess(), dimension.getGenerator(), dimension.getBiomeSource(), templateManager,
+							dimension.getSeed(), chunkPos, 0, set.extra, dimension.getHeightAccessor(), validBiome);
+				}
 				if ((Boolean) mc.call(start, "isValid")) {
 					return entry;
 				}

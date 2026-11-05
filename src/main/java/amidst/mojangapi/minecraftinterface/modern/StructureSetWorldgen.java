@@ -407,45 +407,56 @@ class StructureSetWorldgen extends WorldgenApi {
 		return null;
 	}
 
+	/**
+	 * The structure templates that jigsaw structures start from are not
+	 * thread-safe, so the checks that may read them are done one at a time.
+	 */
 	private boolean isValidStart(ModernDimension dimension, StructureEntry entry, Object chunkPos) {
 		try {
-			Object structure = mc.call(entry.holder, "value");
-			Object biomes = mc.call(structure, "biomes");
-			Predicate<Object> validBiome = biome -> (Boolean) mc.call(biomes, "contains", biome);
-			if (!hasRandomState) {
-				// 1.18.2 only tells after building the pieces
-				Object start = mc.call(structure, "generate",
-						dimension.getRegistryAccess(), dimension.getGenerator(), dimension.getBiomeSource(), dimension.getTemplateManager(),
-						dimension.getSeed(), chunkPos, 0, dimension.getHeightAccessor(), validBiome);
-				return (Boolean) mc.call(start, "isValid");
+			Object templateManager = dimension.getTemplateManager();
+			synchronized (templateManager) {
+				return isValidStart(dimension, entry, chunkPos, templateManager);
 			}
-			Object context;
-			if (hasSamplerContext) {
-				context = mc.create(GENERATION_CONTEXT,
-						dimension.getRegistryAccess(), dimension.getGenerator(), dimension.getBiomeSource(), dimension.getClimateSampler(),
-						dimension.getRandomState(), dimension.getTemplateManager(), dimension.getSeed(), chunkPos, dimension.getHeightAccessor(), validBiome);
-			} else {
-				context = mc.create(GENERATION_CONTEXT,
-						dimension.getRegistryAccess(), dimension.getGenerator(), dimension.getBiomeSource(),
-						dimension.getRandomState(), dimension.getTemplateManager(), dimension.getSeed(), chunkPos, dimension.getHeightAccessor(), validBiome);
-			}
-			if (mc.canCall(structure, "findValidGenerationPoint")) {
-				return ((Optional<?>) mc.call(structure, "findValidGenerationPoint", context)).isPresent();
-			}
-			// 1.19 to 1.19.2 check the biome of the found point in Structure.generate
-			Optional<?> stub = (Optional<?>) mc.call(structure, "findGenerationPoint", context);
-			if (!stub.isPresent()) {
-				return false;
-			}
-			Object position = mc.call(stub.get(), "position");
-			Object biome = mc.call(dimension.getBiomeSource(), "getNoiseBiome",
-					(Integer) mc.call(position, "getX") >> QUART_SHIFT,
-					(Integer) mc.call(position, "getY") >> QUART_SHIFT,
-					(Integer) mc.call(position, "getZ") >> QUART_SHIFT,
-					dimension.getClimateSampler());
-			return validBiome.test(biome);
 		} catch (McException e) {
 			return dimension.reportFailure(entry.key, e);
 		}
+	}
+
+	private boolean isValidStart(ModernDimension dimension, StructureEntry entry, Object chunkPos, Object templateManager) {
+		Object structure = mc.call(entry.holder, "value");
+		Object biomes = mc.call(structure, "biomes");
+		Predicate<Object> validBiome = biome -> (Boolean) mc.call(biomes, "contains", biome);
+		if (!hasRandomState) {
+			// 1.18.2 only tells after building the pieces
+			Object start = mc.call(structure, "generate",
+					dimension.getRegistryAccess(), dimension.getGenerator(), dimension.getBiomeSource(), templateManager,
+					dimension.getSeed(), chunkPos, 0, dimension.getHeightAccessor(), validBiome);
+			return (Boolean) mc.call(start, "isValid");
+		}
+		Object context;
+		if (hasSamplerContext) {
+			context = mc.create(GENERATION_CONTEXT,
+					dimension.getRegistryAccess(), dimension.getGenerator(), dimension.getBiomeSource(), dimension.getClimateSampler(),
+					dimension.getRandomState(), templateManager, dimension.getSeed(), chunkPos, dimension.getHeightAccessor(), validBiome);
+		} else {
+			context = mc.create(GENERATION_CONTEXT,
+					dimension.getRegistryAccess(), dimension.getGenerator(), dimension.getBiomeSource(),
+					dimension.getRandomState(), templateManager, dimension.getSeed(), chunkPos, dimension.getHeightAccessor(), validBiome);
+		}
+		if (mc.canCall(structure, "findValidGenerationPoint")) {
+			return ((Optional<?>) mc.call(structure, "findValidGenerationPoint", context)).isPresent();
+		}
+		// 1.19 to 1.19.2 check the biome of the found point in Structure.generate
+		Optional<?> stub = (Optional<?>) mc.call(structure, "findGenerationPoint", context);
+		if (!stub.isPresent()) {
+			return false;
+		}
+		Object position = mc.call(stub.get(), "position");
+		Object biome = mc.call(dimension.getBiomeSource(), "getNoiseBiome",
+				(Integer) mc.call(position, "getX") >> QUART_SHIFT,
+				(Integer) mc.call(position, "getY") >> QUART_SHIFT,
+				(Integer) mc.call(position, "getZ") >> QUART_SHIFT,
+				dimension.getClimateSampler());
+		return validBiome.test(biome);
 	}
 }
