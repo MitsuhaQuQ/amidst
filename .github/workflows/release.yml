@@ -1,0 +1,42 @@
+# Builds the release downloads and attaches them to the GitHub release of the tag:
+# the jar, which needs Java 25, and a Windows zip with AMIDST.exe and its own Java runtime.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of the release to upload the downloads to
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  downloads:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # A manual run builds the branch it was started from, so a packaging fix needs no new tag
+          ref: ${{ github.event.release.tag_name || github.sha }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - name: Build and test
+        run: mvn -B package
+      - name: Package the Windows app
+        run: |
+          $zip = ./scripts/package-windows.ps1 -Name "AMIDST-$env:TAG-windows"
+          Copy-Item (Get-ChildItem target/amidst-v*.jar | Select-Object -First 1) "amidst-$env:TAG.jar"
+          "ZIP=$zip" | Out-File -Append $env:GITHUB_ENV
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$env:TAG" "$env:ZIP" "amidst-$env:TAG.jar" --clobber

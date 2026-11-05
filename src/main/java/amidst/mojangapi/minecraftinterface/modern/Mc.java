@@ -45,6 +45,32 @@ public class Mc {
 		});
 	}
 
+	/**
+	 * Whether this Minecraft has a class of the given name, so callers can
+	 * follow the renames between versions.
+	 */
+	public boolean hasType(String className) {
+		try {
+			type(className);
+			return true;
+		} catch (McException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Whether the given class has a public method of the given name, whatever
+	 * its parameters.
+	 */
+	public boolean hasMethod(String className, String methodName) {
+		for (Method method : type(className).getMethods()) {
+			if (method.getName().equals(methodName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public Object get(String className, String fieldName) {
 		try {
 			return type(className).getField(fieldName).get(null);

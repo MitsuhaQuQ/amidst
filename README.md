@@ -43,7 +43,12 @@ Amidst **can**:
 
 ### Minecraft 26.1 and later
 
-Since 26.1, Minecraft ships with readable class names. For these versions, Amidst loads the built-in data pack the way a server does and asks Minecraft itself for biomes, the world spawn and where structures go, so the map follows the multi-noise biomes and structure sets of the selected version. This needs Java 25, like the game. The map shows the surface biomes; cave biomes such as the deep dark are not drawn. Structure icons are at the coordinates that `/locate` reports. Saves of 26.1 and later can be opened, but their players are not shown yet. The snapshots of 26.4 are recognised as well, up to 26.4-snapshot-7; a newer snapshot still loads, but is shown as an unknown version.
+Since 26.1, Minecraft ships with readable class names. For these versions, Amidst loads the built-in data pack the way a server does and asks Minecraft itself for biomes, the world spawn and where structures go, so the map follows the multi-noise biomes and structure sets of the selected version. Amidst recognises 26.1 to 26.3 and the 26.4 snapshots (currently 26.4-snapshot-7) and follows the renames between them. The map shows the surface biomes; cave biomes such as the deep dark are not drawn. Structure icons are at the coordinates that `/locate` reports. Saves of 26.1 and later can be opened, but their players are not shown yet.
+
+Amidst does not ship Minecraft: install the version you want to view with the Minecraft launcher first, and Amidst loads it from there. Two downloads are on the [releases page](https://github.com/MitsuhaQuQ/amidst/releases):
+
+* `amidst-<release>.jar` runs on Windows, macOS and Linux and needs Java 25, like the game.
+* `AMIDST-<release>-windows.zip` needs no Java: unpack it and run `AMIDST.exe`. It ships its own Java runtime. `scripts/package-windows.ps1` builds it after `mvn package`.
 
 Minecraft 1.18 to 1.21.11 are obfuscated and use the new world generation, so Amidst does not support them.
 
@@ -62,7 +67,8 @@ Amidst was moved to a new location, since Skidoodle aka skiphs is too busy to ma
 
 ### Links
 
-* [Download](https://github.com/toolbox4minecraft/amidst/releases)
+* [Download](https://github.com/MitsuhaQuQ/amidst/releases) - this fork, with support for Minecraft 26.1 and later
+* [Download of the original Amidst](https://github.com/toolbox4minecraft/amidst/releases) - up to Minecraft 1.17
 * [FAQ](https://github.com/toolbox4minecraft/amidst/wiki/FAQ)
 * [Wiki](https://github.com/toolbox4minecraft/amidst/wiki)
 * [Reporting a Bug](https://github.com/toolbox4minecraft/amidst/wiki/Supporting-the-Development#reporting-a-bug) - please report bugs, so we can fix them

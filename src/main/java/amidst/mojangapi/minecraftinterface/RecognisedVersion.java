@@ -31,13 +31,13 @@ public enum RecognisedVersion {
 	// TODO: stronghold reset on V1_9pre4?
 	UNKNOWN,
 	// Since 26.1, Minecraft is no longer obfuscated, so these versions are recognised by the id in version.json instead of a magic string.
-	_26_4_snapshot_7("26.4-snapshot-7", "26.4-snapshot-7"),                                                             // matches the launcher version id: 26.4-snapshot-7
-	_26_4_snapshot_6("26.4-snapshot-6", "26.4-snapshot-6"),                                                             // matches the launcher version id: 26.4-snapshot-6
-	_26_4_snapshot_5("26.4-snapshot-5", "26.4-snapshot-5"),                                                             // matches the launcher version id: 26.4-snapshot-5
-	_26_4_snapshot_4("26.4-snapshot-4", "26.4-snapshot-4"),                                                             // matches the launcher version id: 26.4-snapshot-4
-	_26_4_snapshot_3("26.4-snapshot-3", "26.4-snapshot-3"),                                                             // matches the launcher version id: 26.4-snapshot-3
-	_26_4_snapshot_2("26.4-snapshot-2", "26.4-snapshot-2"),                                                             // matches the launcher version id: 26.4-snapshot-2
-	_26_4_snapshot_1("26.4-snapshot-1", "26.4-snapshot-1"),                                                             // matches the launcher version id: 26.4-snapshot-1
+	_26_4_snapshot_7("26.4-snapshot-7", "26.4-snapshot-7"),                                                                     // matches the launcher version id: 26.4-snapshot-7
+	_26_4_snapshot_6("26.4-snapshot-6", "26.4-snapshot-6"),                                                                     // matches the launcher version id: 26.4-snapshot-6
+	_26_4_snapshot_5("26.4-snapshot-5", "26.4-snapshot-5"),                                                                     // matches the launcher version id: 26.4-snapshot-5
+	_26_4_snapshot_4("26.4-snapshot-4", "26.4-snapshot-4"),                                                                     // matches the launcher version id: 26.4-snapshot-4
+	_26_4_snapshot_3("26.4-snapshot-3", "26.4-snapshot-3"),                                                                     // matches the launcher version id: 26.4-snapshot-3
+	_26_4_snapshot_2("26.4-snapshot-2", "26.4-snapshot-2"),                                                                     // matches the launcher version id: 26.4-snapshot-2
+	_26_4_snapshot_1("26.4-snapshot-1", "26.4-snapshot-1"),                                                                     // matches the launcher version id: 26.4-snapshot-1
 	_26_3      ("26.3",       "26.3"),                                                                                    // matches the launcher version id: 26.3
 	_26_2      ("26.2",       "26.2"),                                                                                    // matches the launcher version id: 26.2
 	_26_1_2    ("26.1.2",     "26.1.2"),                                                                                  // matches the launcher version id: 26.1.2
