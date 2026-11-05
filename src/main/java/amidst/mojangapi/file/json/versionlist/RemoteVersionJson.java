@@ -2,6 +2,8 @@ package amidst.mojangapi.file.json.versionlist;
 
 import java.net.URL;
 
+import com.google.gson.annotations.SerializedName;
+
 import amidst.documentation.GsonConstructor;
 import amidst.mojangapi.file.json.ReleaseType;
 
@@ -30,9 +32,18 @@ public class RemoteVersionJson {
 		return downloads.server == null ? null : downloads.server.url;
 	}
 
+	/**
+	 * The obfuscation map of the client, which Mojang publishes since 1.14.4.
+	 */
+	public URL getClientMappingsUrl() {
+		return downloads.clientMappings == null ? null : downloads.clientMappings.url;
+	}
+
 	private static class Inner {
 		public volatile Download client;
 		public volatile Download server;
+		@SerializedName("client_mappings")
+		public volatile Download clientMappings;
 
 		@GsonConstructor
 		public Inner() {

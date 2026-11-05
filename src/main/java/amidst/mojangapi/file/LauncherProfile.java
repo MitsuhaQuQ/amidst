@@ -3,11 +3,14 @@ package amidst.mojangapi.file;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import amidst.documentation.Immutable;
 import amidst.mojangapi.file.directory.DotMinecraftDirectory;
 import amidst.mojangapi.file.directory.ProfileDirectory;
 import amidst.mojangapi.file.directory.VersionDirectory;
+import amidst.mojangapi.file.json.version.DownloadJson;
+import amidst.mojangapi.file.json.version.DownloadsJson;
 import amidst.mojangapi.file.json.version.VersionJson;
 import amidst.mojangapi.file.service.ClassLoaderService;
 
@@ -69,6 +72,18 @@ public class LauncherProfile {
 		return versionDirectory.getJar();
 	}
 
+	/**
+	 * The obfuscation map that Mojang publishes for the version, if the
+	 * version json names it.
+	 */
+	public Optional<DownloadJson> getClientMappings() {
+		DownloadsJson downloads = versionJson.getDownloads();
+		if (downloads == null || downloads.getClientMappings() == null || downloads.getClientMappings().getUrl() == null) {
+			return Optional.empty();
+		}
+		return Optional.of(downloads.getClientMappings());
+	}
+
 	public Path getSaves() {
 		return profileDirectory.getSaves();
 	}
@@ -85,9 +100,17 @@ public class LauncherProfile {
 	 * those of Amidst.
 	 */
 	public URLClassLoader newIsolatedClassLoader() throws MalformedURLException {
+		return newIsolatedClassLoader(versionDirectory.getJar());
+	}
+
+	/**
+	 * Like {@link #newIsolatedClassLoader()}, but with another jar in place
+	 * of the one of the version, such as a copy with readable names.
+	 */
+	public URLClassLoader newIsolatedClassLoader(Path jar) throws MalformedURLException {
 		return classLoaderService.createIsolatedClassLoader(
 				dotMinecraftDirectory.getLibraries(),
 				versionJson.getLibraries(),
-				versionDirectory.getJar());
+				jar);
 	}
 }

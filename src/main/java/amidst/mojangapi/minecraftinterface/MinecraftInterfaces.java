@@ -2,6 +2,7 @@ package amidst.mojangapi.minecraftinterface;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -13,6 +14,7 @@ import amidst.clazz.translator.ClassTranslator;
 import amidst.documentation.NotNull;
 import amidst.logging.AmidstLogger;
 import amidst.mojangapi.file.LauncherProfile;
+import amidst.mojangapi.file.service.MappedJarService;
 import amidst.mojangapi.minecraftinterface.legacy.BetaClassTranslator;
 import amidst.mojangapi.minecraftinterface.legacy.BetaMinecraftInterface;
 import amidst.mojangapi.minecraftinterface.legacy.LegacyClassTranslator;
@@ -41,6 +43,15 @@ public enum MinecraftInterfaces {
                 AmidstLogger.info("Minecraft load complete.");
                 return minecraftInterface;
             }
+            if (RecognisedVersion.hasModernWorldGeneration(classLoader)) {
+                // 1.18 to 1.21.11 are obfuscated, so a copy with readable names is loaded instead
+                classLoader.close();
+                Path mappedJar = getMappedJar(launcherProfile);
+                MinecraftInterface minecraftInterface = ModernMinecraftInterface
+                        .create(launcherProfile.newIsolatedClassLoader(mappedJar), recognisedVersion);
+                AmidstLogger.info("Minecraft load complete.");
+                return minecraftInterface;
+            }
             Factory factory = fromVersion(recognisedVersion);
             Map<String, SymbolicClass> symbolicClassMap = Classes
                     .createSymbolicClassMap(launcherProfile.getJar(), classLoader, factory.classTranslator);
@@ -56,6 +67,17 @@ public enum MinecraftInterfaces {
             throw new MinecraftInterfaceCreationException("Unable to create local minecraft interface", e);
         } catch (UnsupportedClassVersionError e) {
         	throw new MinecraftInterfaceCreationException("This version of Minecraft isn't compatible with your Java installation", e);
+        }
+    }
+
+    @NotNull
+    private static Path getMappedJar(LauncherProfile launcherProfile) throws MinecraftInterfaceCreationException {
+        try {
+            return new MappedJarService().getMappedJar(launcherProfile);
+        } catch (IOException e) {
+            throw new MinecraftInterfaceCreationException(
+                    "Unable to give this Minecraft version readable names. Amidst downloads the obfuscation map"
+                            + " that Mojang publishes for it, so it needs an internet connection the first time.", e);
         }
     }
 

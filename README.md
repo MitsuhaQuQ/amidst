@@ -39,18 +39,18 @@ Amidst **can**:
   * buried treasures
   * nether fortresses
   * end cities
-  * since Minecraft 26.1 also bastion remnants, nether fossils, ruined portals, ancient cities, trail ruins, trial chambers and abandoned camps
+  * since Minecraft 1.18 also bastion remnants, nether fossils, ruined portals, ancient cities, trail ruins, trial chambers and abandoned camps, as far as the version has them
 
-### Minecraft 26.1 and later
+### Minecraft 1.18 and later
 
-Since 26.1, Minecraft ships with readable class names. For these versions, Amidst loads the built-in data pack the way a server does and asks Minecraft itself for biomes, the world spawn and where structures go, so the map follows the multi-noise biomes and structure sets of the selected version. Amidst recognises 26.1 to 26.3 and the 26.4 snapshots (currently 26.4-snapshot-7) and follows the renames between them. The map shows the surface biomes; cave biomes such as the deep dark are not drawn. Structure icons are at the coordinates that `/locate` reports. Saves of 26.1 and later can be opened, but their players are not shown yet.
+Since 1.18, Minecraft places biomes with multi-noise and structures with the structure sets of its built-in data pack. For these versions, Amidst loads the data pack the way a server does and asks Minecraft itself for biomes, the world spawn and where structures go, so the map follows the world generation of the selected version. Amidst recognises every release from 1.18 to 1.21.11, 26.1 to 26.3 and the 26.4 snapshots (currently 26.4-snapshot-7) and follows the renames between them; other snapshots load as an unknown version and usually work too. The map shows the surface biomes; cave biomes such as the deep dark are not drawn. Structure icons are at the coordinates that `/locate` reports. Saves of these versions can be opened, but the players of saves since 26.1 are not shown yet.
+
+Minecraft 26.1 and later ship with readable class names. Minecraft 1.18 to 1.21.11 are obfuscated, so the first time one of them is selected, Amidst downloads the obfuscation map that Mojang publishes for it (about 10 MB) and writes a copy of the jar with readable names, which takes a few seconds. The copy is kept in `%LOCALAPPDATA%\Amidst\mapped-jars` on Windows, `~/Library/Caches/Amidst/mapped-jars` on macOS and `~/.cache/amidst/mapped-jars` on Linux, and can be deleted at any time.
 
 Amidst does not ship Minecraft: install the version you want to view with the Minecraft launcher first, and Amidst loads it from there. Two downloads are on the [releases page](https://github.com/MitsuhaQuQ/amidst/releases):
 
-* `amidst-<release>.jar` runs on Windows, macOS and Linux and needs Java 25, like the game.
+* `amidst-<release>.jar` runs on Windows, macOS and Linux and needs Java 25, like the latest game; it loads the older versions with that Java as well.
 * `AMIDST-<release>-windows.zip` needs no Java: unpack it and run `AMIDST.exe`. It ships its own Java runtime. `scripts/package-windows.ps1` builds it after `mvn package`.
-
-Minecraft 1.18 to 1.21.11 are obfuscated and use the new world generation, so Amidst does not support them.
 
 Amidst **cannot**:
 
@@ -67,7 +67,7 @@ Amidst was moved to a new location, since Skidoodle aka skiphs is too busy to ma
 
 ### Links
 
-* [Download](https://github.com/MitsuhaQuQ/amidst/releases) - this fork, with support for Minecraft 26.1 and later
+* [Download](https://github.com/MitsuhaQuQ/amidst/releases) - this fork, with support for Minecraft 1.18 and later
 * [Download of the original Amidst](https://github.com/toolbox4minecraft/amidst/releases) - up to Minecraft 1.17
 * [FAQ](https://github.com/toolbox4minecraft/amidst/wiki/FAQ)
 * [Wiki](https://github.com/toolbox4minecraft/amidst/wiki)

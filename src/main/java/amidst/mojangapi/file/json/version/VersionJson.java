@@ -11,6 +11,7 @@ public class VersionJson {
 	private volatile String id;
 	private volatile String inheritsFrom;
 	private volatile List<LibraryJson> libraries = Collections.emptyList();
+	private volatile DownloadsJson downloads;
 
 	@GsonConstructor
 	public VersionJson() {
@@ -26,5 +27,13 @@ public class VersionJson {
 
 	public List<LibraryJson> getLibraries() {
 		return libraries;
+	}
+
+	/**
+	 * The files Mojang publishes for the version, or null for the json of a
+	 * modded version.
+	 */
+	public DownloadsJson getDownloads() {
+		return downloads;
 	}
 }

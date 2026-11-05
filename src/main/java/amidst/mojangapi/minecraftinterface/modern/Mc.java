@@ -4,9 +4,12 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -21,9 +24,10 @@ import amidst.documentation.ThreadSafe;
 
 /**
  * Calls into Minecraft by the names of its classes and members, which are
- * readable since Minecraft 26.1. Methods are found by their name and by the
- * runtime types of the arguments, so callers do not need to spell out the
- * parameter types of every call.
+ * readable since Minecraft 26.1, and in a copy of an older jar that Amidst
+ * made with Mojang's obfuscation map. Methods are found by their name and
+ * by the runtime types of the arguments, so callers do not need to spell
+ * out the parameter types of every call.
  */
 @ThreadSafe
 public class Mc {
@@ -71,12 +75,116 @@ public class Mc {
 		return false;
 	}
 
+	/**
+	 * Whether the given class has a public method of the given name with the
+	 * given number of parameters.
+	 */
+	public boolean hasMethod(String className, String methodName, int parameterCount) {
+		for (Method method : type(className).getMethods()) {
+			if (method.getName().equals(methodName) && method.getParameterCount() == parameterCount) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Whether the given object has a public method of the given name, so
+	 * callers can follow the renames between versions.
+	 */
+	public boolean canCall(Object target, String methodName) {
+		for (Method method : target.getClass().getMethods()) {
+			if (method.getName().equals(methodName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean hasConstructor(String className, int parameterCount) {
+		for (Constructor<?> constructor : type(className).getConstructors()) {
+			if (constructor.getParameterCount() == parameterCount) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean hasField(String className, String fieldName) {
+		try {
+			type(className).getField(fieldName);
+			return true;
+		} catch (NoSuchFieldException e) {
+			return false;
+		}
+	}
+
 	public Object get(String className, String fieldName) {
 		try {
 			return type(className).getField(fieldName).get(null);
 		} catch (ReflectiveOperationException e) {
 			throw new McException("unable to read " + className + "." + fieldName, e);
 		}
+	}
+
+	/**
+	 * A public field of an object, such as the coordinates of a chunk
+	 * position before they became record components.
+	 */
+	public Object get(Object target, String fieldName) {
+		try {
+			return target.getClass().getField(fieldName).get(target);
+		} catch (ReflectiveOperationException e) {
+			throw new McException("unable to read " + fieldName + " of " + target.getClass().getName(), e);
+		}
+	}
+
+	/**
+	 * A field that Minecraft does not expose, for the few places where an
+	 * old version keeps what Amidst needs to itself.
+	 */
+	public Object getPrivate(Object target, String fieldName) {
+		for (Class<?> type = target.getClass(); type != null; type = type.getSuperclass()) {
+			try {
+				Field field = type.getDeclaredField(fieldName);
+				field.setAccessible(true);
+				return field.get(target);
+			} catch (NoSuchFieldException e) {
+				// keep looking in the superclass
+			} catch (ReflectiveOperationException | RuntimeException e) {
+				throw new McException("unable to read " + fieldName + " of " + target.getClass().getName(), e);
+			}
+		}
+		throw new McException(target.getClass().getName() + " has no field " + fieldName);
+	}
+
+	/**
+	 * Calls a static method that Minecraft does not expose.
+	 */
+	public Object callPrivateStatic(String className, String methodName, Object... args) {
+		for (Method method : type(className).getDeclaredMethods()) {
+			if (method.getName().equals(methodName) && Modifier.isStatic(method.getModifiers())
+					&& accepts(method.getParameterTypes(), argTypes(args))) {
+				try {
+					method.setAccessible(true);
+					return method.invoke(null, args);
+				} catch (InvocationTargetException e) {
+					throw new McException("Minecraft failed in " + method, e.getCause());
+				} catch (ReflectiveOperationException | RuntimeException e) {
+					throw new McException("unable to call " + method, e);
+				}
+			}
+		}
+		throw new McException("Minecraft has no static method " + methodName + " in " + className);
+	}
+
+	/**
+	 * An object that implements one of Minecraft's interfaces, for the
+	 * callbacks Minecraft asks for.
+	 */
+	public Object proxy(String interfaceName, InvocationHandler handler) {
+		Class<?> type = type(interfaceName);
+		return Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type }, handler);
 	}
 
 	public Object call(Object target, String methodName, Object... args) {
@@ -112,6 +220,18 @@ public class Mc {
 		}
 	}
 
+	/**
+	 * A handle for a constructor that is called too often for the lookup by
+	 * argument types.
+	 */
+	public MethodHandle constructorHandle(String className, Class<?>... parameterTypes) {
+		try {
+			return MethodHandles.publicLookup().unreflectConstructor(type(className).getConstructor(parameterTypes));
+		} catch (ReflectiveOperationException e) {
+			throw new McException("unable to find the constructor of " + className, e);
+		}
+	}
+
 	private static Object invoke(Executable executable, Object target, Object[] args) {
 		try {
 			return ((Method) executable).invoke(target, args);
@@ -126,13 +246,18 @@ public class Mc {
 	 * @param methodName the name of the method, or null for a constructor
 	 */
 	private Executable find(Class<?> owner, String methodName, boolean isStatic, Object[] args) {
+		Class<?>[] argTypes = argTypes(args);
+		return executables.computeIfAbsent(
+				new Signature(owner, methodName, argTypes),
+				signature -> lookup(owner, methodName, isStatic, argTypes));
+	}
+
+	private static Class<?>[] argTypes(Object[] args) {
 		Class<?>[] argTypes = new Class<?>[args.length];
 		for (int i = 0; i < args.length; i++) {
 			argTypes[i] = args[i] == null ? null : args[i].getClass();
 		}
-		return executables.computeIfAbsent(
-				new Signature(owner, methodName, argTypes),
-				signature -> lookup(owner, methodName, isStatic, argTypes));
+		return argTypes;
 	}
 
 	private static Executable lookup(Class<?> owner, String methodName, boolean isStatic, Class<?>[] argTypes) {

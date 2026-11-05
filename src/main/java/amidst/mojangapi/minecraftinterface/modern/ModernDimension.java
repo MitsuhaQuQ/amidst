@@ -2,13 +2,10 @@ package amidst.mojangapi.minecraftinterface.modern;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import amidst.documentation.ThreadSafe;
@@ -18,120 +15,166 @@ import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
 
 /**
  * The generator of one dimension of a world, as Minecraft sets it up for a
- * new world with the given seed.
+ * new world with the given seed. The calls into Minecraft that differ
+ * between versions go through the {@link WorldgenApi}.
  */
 @ThreadSafe
 public class ModernDimension {
-	private static final String RANDOM_SPREAD = "net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement";
-	private static final String CONCENTRIC_RINGS = "net.minecraft.world.level.levelgen.structure.placement.ConcentricRingsStructurePlacement";
-	private static final String NOISE_BASED_GENERATOR = "net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator";
-	private static final String REGISTRIES = "net.minecraft.core.registries.Registries";
+	private static final String LEVEL_HEIGHT_ACCESSOR = "net.minecraft.world.level.LevelHeightAccessor";
 
-	private final Mc mc;
+	/**
+	 * How a structure set places its structures.
+	 */
+	enum PlacementKind {
+		/** One structure per region of spacing times spacing chunks. */
+		RANDOM_SPREAD,
+		/** On rings around the origin of the world, like strongholds. */
+		CONCENTRIC_RINGS,
+		/** A kind of placement Amidst does not know, so every chunk is asked about. */
+		OTHER
+	}
+
+	/**
+	 * A structure set, or until 1.18.1 a kind of structure with its
+	 * settings.
+	 */
+	static class StructureSet {
+		final String key;
+		/** The placement, or until 1.18.1 the structure feature. */
+		final Object placement;
+		/** Until 1.18.1, the spacing, separation and salt of the feature. */
+		final Object extra;
+		final PlacementKind kind;
+		final int spacing;
+		final List<StructureEntry> entries;
+		final Set<DefaultWorldIconTypes> types;
+
+		StructureSet(String key, Object placement, Object extra, PlacementKind kind, int spacing, List<StructureEntry> entries, Set<DefaultWorldIconTypes> types) {
+			this.key = key;
+			this.placement = placement;
+			this.extra = extra;
+			this.kind = kind;
+			this.spacing = spacing;
+			this.entries = Collections.unmodifiableList(entries);
+			this.types = Collections.unmodifiableSet(types);
+		}
+
+		@Override
+		public String toString() {
+			return key;
+		}
+	}
+
+	/**
+	 * A structure of a set.
+	 */
+	static class StructureEntry {
+		/** The holder of the structure, or until 1.18.1 the configured structure feature. */
+		final Object holder;
+		final String key;
+		final int weight;
+		final DefaultWorldIconTypes type;
+		/** Until 1.18.1, the keys of the biomes the variant is registered for. */
+		final Object extra;
+
+		StructureEntry(Object holder, String key, int weight, DefaultWorldIconTypes type, Object extra) {
+			this.holder = holder;
+			this.key = key;
+			this.weight = weight;
+			this.type = type;
+			this.extra = extra;
+		}
+	}
+
+	private final WorldgenApi api;
 	private final Object registryAccess;
 	private final Supplier<Object> templateManager;
 	private final long seed;
 	private final Object generator;
 	private final Object biomeSource;
+	private final Object heightAccessor;
 	private final Object randomState;
 	private final Object structureState;
-	private final Object heightAccessor;
 	private final List<StructureSet> structureSets;
 	private final ThreadLocal<Object> climateSampler;
 	private final Set<String> failedStructures = ConcurrentHashMap.newKeySet();
 	private final Map<StructureSet, List<int[]>> ringChunks = new ConcurrentHashMap<>();
 
-	public ModernDimension(Mc mc, Object registryAccess, Object levelStem, long seed, Supplier<Object> templateManager) {
-		this.mc = mc;
+	ModernDimension(Mc mc, WorldgenApi api, Object registryAccess, WorldgenApi.Stem stem, long seed, Supplier<Object> templateManager) {
+		this.api = api;
 		this.registryAccess = registryAccess;
 		this.templateManager = templateManager;
 		this.seed = seed;
-		this.generator = mc.call(levelStem, "generator");
+		this.generator = stem.generator;
 		this.biomeSource = mc.call(generator, "getBiomeSource");
-		Object dimensionType = mc.call(mc.call(levelStem, "type"), "value");
-		this.heightAccessor = mc.callStatic("net.minecraft.world.level.LevelHeightAccessor", "create",
-				mc.call(dimensionType, "minY"), mc.call(dimensionType, "height"));
-		this.randomState = createRandomState();
-		this.structureState = mc.call(generator, "createState", registry("STRUCTURE_SET"), randomState, seed);
-		mc.call(structureState, "ensureStructuresGenerated");
-		this.structureSets = readStructureSets();
-		this.climateSampler = ThreadLocal.withInitial(() -> mc.call(randomState, "createClimateSampler",
-				mc.call(mc.call(mc.callStatic("net.minecraft.world.level.levelgen.densityfunction.SamplerContext", "builder"),
-						"enableCaches"), "build")));
+		this.heightAccessor = mc.callStatic(LEVEL_HEIGHT_ACCESSOR, "create", stem.minY, stem.height);
+		this.randomState = api.createRandomState(this);
+		this.climateSampler = ThreadLocal.withInitial(() -> api.createClimateSampler(this));
+		this.structureState = api.createStructureState(this);
+		this.structureSets = Collections.unmodifiableList(api.readStructureSets(this));
 	}
 
-	private Object registry(String name) {
-		return mc.call(registryAccess, "lookupOrThrow", mc.get(REGISTRIES, name));
+	Object getRegistryAccess() {
+		return registryAccess;
 	}
 
-	/**
-	 * Like ChunkMap does it for the generator of a level.
-	 */
-	private Object createRandomState() {
-		String randomState = "net.minecraft.world.level.levelgen.RandomState";
-		if (mc.hasMethod(randomState, "createForGenerator")) {
-			// Since 26.4, Minecraft decides itself how a generator gets its noise
-			return mc.callStatic(randomState, "createForGenerator", registry("NOISE"), seed, generator, heightAccessor);
-		} else if (mc.type(NOISE_BASED_GENERATOR).isInstance(generator)) {
-			return mc.callStatic(randomState, "create",
-					registry("NOISE"), seed, mc.call(mc.call(generator, "generatorSettings"), "value"));
-		} else {
-			// Flat worlds have no noise of their own
-			Object stone = mc.call(mc.get("net.minecraft.world.level.block.Blocks", "STONE"), "defaultBlockState");
-			return mc.callStatic(randomState, "create",
-					registry("NOISE"), seed, false, stone, 63, mc.callStatic("net.minecraft.world.level.levelgen.NoiseRouterData", "none"));
-		}
-	}
-
-	private List<StructureSet> readStructureSets() {
-		List<StructureSet> result = new ArrayList<>();
-		for (Object holder : (List<?>) mc.call(structureState, "possibleStructureSets")) {
-			Object set = mc.call(holder, "value");
-			List<StructureEntry> entries = new ArrayList<>();
-			EnumSet<DefaultWorldIconTypes> types = EnumSet.noneOf(DefaultWorldIconTypes.class);
-			for (Object entry : (List<?>) mc.call(set, "structures")) {
-				Object structure = mc.call(entry, "structure");
-				String key = keyOf(structure);
-				DefaultWorldIconTypes type = ModernStructures.iconOf(key);
-				if (type != null) {
-					types.add(type);
-				}
-				entries.add(new StructureEntry(structure, key, (Integer) mc.call(entry, "weight"), type));
-			}
-			result.add(new StructureSet(keyOf(holder), mc.call(set, "placement"), entries, types));
-		}
-		return Collections.unmodifiableList(result);
-	}
-
-	private String keyOf(Object holder) {
-		Optional<?> key = (Optional<?>) mc.call(holder, "unwrapKey");
-		return key.map(k -> mc.call(k, "identifier").toString()).orElse("unregistered");
+	Object getTemplateManager() {
+		return templateManager.get();
 	}
 
 	public long getSeed() {
 		return seed;
 	}
 
+	Object getGenerator() {
+		return generator;
+	}
+
+	Object getBiomeSource() {
+		return biomeSource;
+	}
+
+	Object getHeightAccessor() {
+		return heightAccessor;
+	}
+
+	/** Null before 1.19. */
+	Object getRandomState() {
+		return randomState;
+	}
+
+	/** Null before 1.19.3. */
+	Object getStructureState() {
+		return structureState;
+	}
+
+	/** The climate sampler of the calling thread. */
+	Object getClimateSampler() {
+		return climateSampler.get();
+	}
+
 	/**
-	 * A new resolver of the noise biomes, which are at quarter resolution.
-	 * Each thread needs its own.
+	 * The biomes at quarter resolution, for the calling thread.
 	 */
-	public Object createBiomeResolver() {
-		return mc.call(biomeSource, "createUncachedResolver", randomState);
+	WorldgenApi.Resolver createQuarterBiomes() {
+		return api.quarterBiomes(this);
+	}
+
+	WorldgenApi.NoiseBiomes createBlockBiomes(WorldgenApi.Resolver quarter, long biomeZoomSeed) {
+		return api.blockBiomes(this, quarter, biomeZoomSeed);
 	}
 
 	/**
 	 * The chunk that Minecraft starts its search for the world spawn from.
 	 */
 	public int[] getOriginChunk() {
-		Object chunkPos = mc.call(generator, "getOrigin", randomState);
-		return new int[] { (Integer) mc.call(chunkPos, "x"), (Integer) mc.call(chunkPos, "z") };
+		return api.originChunk(this);
 	}
 
 	public List<ConcentricRings> getConcentricRings(Set<DefaultWorldIconTypes> types) {
 		List<ConcentricRings> result = new ArrayList<>();
 		for (StructureSet set : structureSets) {
-			if (mc.type(CONCENTRIC_RINGS).isInstance(set.placement) && !Collections.disjoint(set.types, types)) {
+			if (set.kind == PlacementKind.CONCENTRIC_RINGS && !Collections.disjoint(set.types, types)) {
 				result.add(new ConcentricRings(set, getRingChunks(set)));
 			}
 		}
@@ -143,14 +186,7 @@ public class ModernDimension {
 	 * computed once.
 	 */
 	private List<int[]> getRingChunks(StructureSet set) {
-		return ringChunks.computeIfAbsent(set, s -> {
-			List<int[]> result = new ArrayList<>();
-			List<?> positions = (List<?>) mc.call(structureState, "getRingPositionsFor", s.placement);
-			for (Object chunkPos : positions == null ? Collections.emptyList() : positions) {
-				result.add(new int[] { (Integer) mc.call(chunkPos, "x"), (Integer) mc.call(chunkPos, "z") });
-			}
-			return Collections.unmodifiableList(result);
-		});
+		return ringChunks.computeIfAbsent(set, s -> Collections.unmodifiableList(api.ringChunks(this, s)));
 	}
 
 	/**
@@ -180,26 +216,26 @@ public class ModernDimension {
 
 	private List<int[]> getCandidateChunks(StructureSet set, int chunkX, int chunkZ, int size) {
 		List<int[]> result = new ArrayList<>();
-		if (mc.type(RANDOM_SPREAD).isInstance(set.placement)) {
-			int spacing = (Integer) mc.call(set.placement, "spacing");
+		switch (set.kind) {
+		case RANDOM_SPREAD:
+			int spacing = set.spacing;
 			for (int regionX = Math.floorDiv(chunkX, spacing); regionX <= Math.floorDiv(chunkX + size - 1, spacing); regionX++) {
 				for (int regionZ = Math.floorDiv(chunkZ, spacing); regionZ <= Math.floorDiv(chunkZ + size - 1, spacing); regionZ++) {
-					Object chunkPos = mc.call(set.placement, "getPotentialStructureChunk", seed, regionX * spacing, regionZ * spacing);
-					int x = (Integer) mc.call(chunkPos, "x");
-					int z = (Integer) mc.call(chunkPos, "z");
-					if (isInSquare(x, z, chunkX, chunkZ, size)) {
-						result.add(new int[] { x, z });
+					int[] chunk = api.potentialChunk(this, set, regionX * spacing, regionZ * spacing);
+					if (isInSquare(chunk[0], chunk[1], chunkX, chunkZ, size)) {
+						result.add(chunk);
 					}
 				}
 			}
-		} else if (mc.type(CONCENTRIC_RINGS).isInstance(set.placement)) {
+			break;
+		case CONCENTRIC_RINGS:
 			for (int[] chunk : getRingChunks(set)) {
 				if (isInSquare(chunk[0], chunk[1], chunkX, chunkZ, size)) {
 					result.add(chunk);
 				}
 			}
-		} else {
-			// A kind of placement Amidst does not know, so ask about every chunk
+			break;
+		default:
 			for (int x = chunkX; x < chunkX + size; x++) {
 				for (int z = chunkZ; z < chunkZ + size; z++) {
 					result.add(new int[] { x, z });
@@ -213,66 +249,32 @@ public class ModernDimension {
 		return x >= chunkX && x < chunkX + size && z >= chunkZ && z < chunkZ + size;
 	}
 
-	/**
-	 * Does what ChunkGenerator.createStructures does for one structure set
-	 * and chunk, but without building the pieces of the structure.
-	 */
 	private void findStructure(StructureSet set, int chunkX, int chunkZ, Set<DefaultWorldIconTypes> types, StructureConsumer consumer) {
-		if (!(Boolean) mc.call(set.placement, "isStructureChunk", structureState, chunkX, chunkZ)) {
+		Object chunkPos = api.chunkPos(chunkX, chunkZ);
+		StructureEntry found;
+		try {
+			found = api.findStart(this, set, chunkPos, chunkX, chunkZ);
+		} catch (McException e) {
+			reportFailure(set.key, e);
 			return;
 		}
-		Object chunkPos = mc.create("net.minecraft.world.level.ChunkPos", chunkX, chunkZ);
-		StructureEntry found = null;
-		if (set.entries.size() == 1) {
-			if (isValidStart(set.entries.get(0), chunkPos)) {
-				found = set.entries.get(0);
-			}
-		} else {
-			List<StructureEntry> options = new ArrayList<>(set.entries);
-			Object random = mc.create("net.minecraft.world.level.levelgen.WorldgenRandom",
-					mc.create("net.minecraft.world.level.levelgen.LegacyRandomSource", 0L));
-			mc.call(random, "setLargeFeatureSeed", seed, chunkX, chunkZ);
-			int total = options.stream().mapToInt(o -> o.weight).sum();
-			while (!options.isEmpty()) {
-				int choice = (Integer) mc.call(random, "nextInt", total);
-				int index = 0;
-				for (StructureEntry option : options) {
-					choice -= option.weight;
-					if (choice < 0) {
-						break;
-					}
-					index++;
-				}
-				StructureEntry selected = options.get(index);
-				if (isValidStart(selected, chunkPos)) {
-					found = selected;
-					break;
-				}
-				options.remove(index);
-				total -= selected.weight;
-			}
-		}
 		if (found != null && found.type != null && types.contains(found.type)) {
-			Object locatePos = mc.call(set.placement, "getLocatePos", chunkPos);
-			consumer.accept(found.type, (Integer) mc.call(locatePos, "getX"), (Integer) mc.call(locatePos, "getZ"));
+			int[] position = api.locatePos(this, set, chunkPos);
+			consumer.accept(found.type, position[0], position[1]);
 		}
 	}
 
-	private boolean isValidStart(StructureEntry entry, Object chunkPos) {
-		try {
-			Object structure = mc.call(entry.holder, "value");
-			Object biomes = mc.call(structure, "biomes");
-			Predicate<Object> validBiome = biome -> (Boolean) mc.call(biomes, "contains", biome);
-			Object context = mc.create("net.minecraft.world.level.levelgen.structure.Structure$GenerationContext",
-					registryAccess, generator, biomeSource, climateSampler.get(), randomState, templateManager.get(),
-					seed, chunkPos, heightAccessor, validBiome);
-			return ((Optional<?>) mc.call(structure, "findValidGenerationPoint", context)).isPresent();
-		} catch (McException e) {
-			if (failedStructures.add(entry.key)) {
-				AmidstLogger.warn(e, "Unable to check where Minecraft places {}", entry.key);
-			}
-			return false;
+	/**
+	 * Logs once per structure that Minecraft could not be asked about it,
+	 * so the other structures still show.
+	 *
+	 * @return false, for the callers that answer whether a structure is there
+	 */
+	boolean reportFailure(String key, McException e) {
+		if (failedStructures.add(key)) {
+			AmidstLogger.warn(e, "Unable to check where Minecraft places {}", key);
 		}
+		return false;
 	}
 
 	@FunctionalInterface
@@ -291,39 +293,6 @@ public class ModernDimension {
 
 		public List<int[]> getChunks() {
 			return chunks;
-		}
-	}
-
-	private static class StructureSet {
-		private final String key;
-		private final Object placement;
-		private final List<StructureEntry> entries;
-		private final Set<DefaultWorldIconTypes> types;
-
-		private StructureSet(String key, Object placement, List<StructureEntry> entries, Set<DefaultWorldIconTypes> types) {
-			this.key = key;
-			this.placement = placement;
-			this.entries = Collections.unmodifiableList(entries);
-			this.types = Collections.unmodifiableSet(types);
-		}
-
-		@Override
-		public String toString() {
-			return key;
-		}
-	}
-
-	private static class StructureEntry {
-		private final Object holder;
-		private final String key;
-		private final int weight;
-		private final DefaultWorldIconTypes type;
-
-		private StructureEntry(Object holder, String key, int weight, DefaultWorldIconTypes type) {
-			this.holder = holder;
-			this.key = key;
-			this.weight = weight;
-			this.type = type;
 		}
 	}
 }

@@ -127,6 +127,17 @@
 			<version>2.37</version>
 		</dependency>
 		<dependency>
+			<!-- Gives Minecraft 1.18 to 1.21.11 readable names before Amidst loads them -->
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>9.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-commons</artifactId>
+			<version>9.8</version>
+		</dependency>
+		<dependency>
 			<groupId>com.github.Querz</groupId>
 			<artifactId>NBT</artifactId>
 			<version>6.1</version>

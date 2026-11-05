@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import amidst.documentation.Immutable;
@@ -43,6 +44,34 @@ public enum RecognisedVersion {
 	_26_1_2    ("26.1.2",     "26.1.2"),                                                                                  // matches the launcher version id: 26.1.2
 	_26_1_1    ("26.1.1",     "26.1.1"),                                                                                  // matches the launcher version id: 26.1.1
 	_26_1      ("26.1",       "26.1"),                                                                                    // matches the launcher version id: 26.1
+	// Minecraft 1.18 to 1.21.11 are obfuscated, but Amidst gives them readable names with the obfuscation map Mojang publishes, so they are recognised by the id in version.json as well.
+	_1_21_11   ("1.21.11",    "1.21.11"),                                                                                 // matches the launcher version id: 1.21.11
+	_1_21_10   ("1.21.10",    "1.21.10"),                                                                                 // matches the launcher version id: 1.21.10
+	_1_21_9    ("1.21.9",     "1.21.9"),                                                                                  // matches the launcher version id: 1.21.9
+	_1_21_8    ("1.21.8",     "1.21.8"),                                                                                  // matches the launcher version id: 1.21.8
+	_1_21_7    ("1.21.7",     "1.21.7"),                                                                                  // matches the launcher version id: 1.21.7
+	_1_21_6    ("1.21.6",     "1.21.6"),                                                                                  // matches the launcher version id: 1.21.6
+	_1_21_5    ("1.21.5",     "1.21.5"),                                                                                  // matches the launcher version id: 1.21.5
+	_1_21_4    ("1.21.4",     "1.21.4"),                                                                                  // matches the launcher version id: 1.21.4
+	_1_21_3    ("1.21.3",     "1.21.3"),                                                                                  // matches the launcher version id: 1.21.3
+	_1_21_2    ("1.21.2",     "1.21.2"),                                                                                  // matches the launcher version id: 1.21.2
+	_1_21_1    ("1.21.1",     "1.21.1"),                                                                                  // matches the launcher version id: 1.21.1
+	_1_21      ("1.21",       "1.21"),                                                                                    // matches the launcher version id: 1.21
+	_1_20_6    ("1.20.6",     "1.20.6"),                                                                                  // matches the launcher version id: 1.20.6
+	_1_20_5    ("1.20.5",     "1.20.5"),                                                                                  // matches the launcher version id: 1.20.5
+	_1_20_4    ("1.20.4",     "1.20.4"),                                                                                  // matches the launcher version id: 1.20.4
+	_1_20_3    ("1.20.3",     "1.20.3"),                                                                                  // matches the launcher version id: 1.20.3
+	_1_20_2    ("1.20.2",     "1.20.2"),                                                                                  // matches the launcher version id: 1.20.2
+	_1_20_1    ("1.20.1",     "1.20.1"),                                                                                  // matches the launcher version id: 1.20.1
+	_1_20      ("1.20",       "1.20"),                                                                                    // matches the launcher version id: 1.20
+	_1_19_4    ("1.19.4",     "1.19.4"),                                                                                  // matches the launcher version id: 1.19.4
+	_1_19_3    ("1.19.3",     "1.19.3"),                                                                                  // matches the launcher version id: 1.19.3
+	_1_19_2    ("1.19.2",     "1.19.2"),                                                                                  // matches the launcher version id: 1.19.2
+	_1_19_1    ("1.19.1",     "1.19.1"),                                                                                  // matches the launcher version id: 1.19.1
+	_1_19      ("1.19",       "1.19"),                                                                                    // matches the launcher version id: 1.19
+	_1_18_2    ("1.18.2",     "1.18.2"),                                                                                  // matches the launcher version id: 1.18.2
+	_1_18_1    ("1.18.1",     "1.18.1"),                                                                                  // matches the launcher version id: 1.18.1
+	_1_18      ("1.18",       "1.18"),                                                                                    // matches the launcher version id: 1.18
 	_1_17_1    ("1.17.1",     "bwudib$adifasiaciwagx$baeh[Jaedadixldhvxoxiaguxkdcq"),                                     // matches the launcher version id: 1.17.1
 	_1_17      ("1.17",       "bwtdib$adifashaciwagx$baeh[Jaedadixldhvxoxiaguxkdcp"),                                     // matches the launcher version id: 1.17-pre1  1.17-pre2  1.17-pre3  1.17-pre4  1.17-pre5  1.17-rc1  1.17-rc2  1.17
 	_21w19a    ("21w19a",     "bwcdhi$adhmarraphaccvvgs$baeb[Jadxadcxgdhcxjxdagnxfdbw"),                                  // matches the launcher version id: 21w19a
@@ -299,7 +328,7 @@ public enum RecognisedVersion {
 
 	@NotNull
 	public static String generateMagicString(URLClassLoader classLoader) throws ClassNotFoundException {
-		if (isUnobfuscated(classLoader)) {
+		if (hasModernWorldGeneration(classLoader)) {
 			return readVersionId(classLoader);
 		}
 		return generateMagicString(getMainClassFields(classLoader));
@@ -312,14 +341,42 @@ public enum RecognisedVersion {
 		return classLoader.findResource(UNOBFUSCATED_CLASS_RESOURCE) != null;
 	}
 
+	/**
+	 * Whether this Minecraft is 1.18 or later, which generate their worlds
+	 * with multi-noise biomes and structure sets. Those versions are
+	 * obfuscated until 26.1, but Amidst gives them readable names and talks
+	 * to them like to the versions since 26.1.
+	 */
+	public static boolean hasModernWorldGeneration(URLClassLoader classLoader) {
+		if (isUnobfuscated(classLoader)) {
+			return true;
+		}
+		try {
+			JsonObject versionJson = readVersionJson(classLoader);
+			return versionJson.has(WORLD_VERSION_KEY) && versionJson.get(WORLD_VERSION_KEY).getAsInt() > LAST_LEGACY_WORLD_VERSION;
+		} catch (ClassNotFoundException e) {
+			// Versions before 1.14 have no version.json
+			return false;
+		}
+	}
+
 	@NotNull
 	private static String readVersionId(URLClassLoader classLoader) throws ClassNotFoundException {
+		try {
+			return readVersionJson(classLoader).get("id").getAsString();
+		} catch (RuntimeException e) {
+			throw new ClassNotFoundException("unable to read the id in " + VERSION_JSON_RESOURCE, e);
+		}
+	}
+
+	@NotNull
+	private static JsonObject readVersionJson(URLClassLoader classLoader) throws ClassNotFoundException {
 		URL versionJson = classLoader.findResource(VERSION_JSON_RESOURCE);
 		if (versionJson == null) {
 			throw new ClassNotFoundException("unable to find " + VERSION_JSON_RESOURCE + " in the given jar file");
 		}
 		try (Reader reader = new InputStreamReader(versionJson.openStream(), StandardCharsets.UTF_8)) {
-			return JsonParser.parseReader(reader).getAsJsonObject().get("id").getAsString();
+			return JsonParser.parseReader(reader).getAsJsonObject();
 		} catch (IOException | RuntimeException e) {
 			throw new ClassNotFoundException("unable to read " + VERSION_JSON_RESOURCE, e);
 		}
@@ -453,6 +510,9 @@ public enum RecognisedVersion {
 	private static final String SERVER_CLASS = "net.minecraft.server.MinecraftServer";
 	private static final String UNOBFUSCATED_CLASS_RESOURCE = "net/minecraft/world/level/biome/MultiNoiseBiomeSource.class";
 	private static final String VERSION_JSON_RESOURCE = "version.json";
+	private static final String WORLD_VERSION_KEY = "world_version";
+	/** The data version of 1.17.1, the last version before the multi-noise biomes. */
+	private static final int LAST_LEGACY_WORLD_VERSION = 2730;
 
 	private final boolean isKnown;
 	private final String name;

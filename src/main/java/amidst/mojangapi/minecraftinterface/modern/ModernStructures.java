@@ -48,6 +48,9 @@ public enum ModernStructures {
 			return DefaultWorldIconTypes.ABANDONED_CAMP;
 		}
 		switch (path) {
+		case "village":
+			// 1.18 and 1.18.1 have one village feature with configured variants
+			return DefaultWorldIconTypes.VILLAGE;
 		case "pillager_outpost":
 			return DefaultWorldIconTypes.PILLAGER_OUTPOST;
 		case "desert_pyramid":

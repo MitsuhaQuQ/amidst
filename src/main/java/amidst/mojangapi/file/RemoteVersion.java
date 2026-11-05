@@ -48,6 +48,13 @@ public class RemoteVersion {
 		return remoteVersionJson.getServerUrl() != null;
 	}
 
+	/**
+	 * The obfuscation map of the client, or null for versions before 1.14.4.
+	 */
+	public URL getClientMappingsUrl() {
+		return remoteVersionJson.getClientMappingsUrl();
+	}
+
 	public void downloadClient(String prefix) throws IOException {
 		String versionId1 = getId();
 		copyToFile(URIUtils.newInputStream(remoteVersionJson.getClientUrl()),

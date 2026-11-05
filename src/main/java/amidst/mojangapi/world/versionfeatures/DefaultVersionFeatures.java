@@ -174,7 +174,7 @@ public enum DefaultVersionFeatures {
 					LayerIds.WOODLAND_MANSION
 				).sinceExtend(RecognisedVersion._18w09a,
 					LayerIds.OCEAN_FEATURES
-				).sinceExtend(RecognisedVersion._26_1,
+				).sinceExtend(RecognisedVersion._1_18,
 					LayerIds.OTHER_STRUCTURES
 				).construct())
 
