@@ -1,10 +1,5 @@
 
----
 
->[!IMPORTANT]
->:warning: This project is searching for a new maintainer. If you are interested, please get in touch. See [#1144](https://github.com/toolbox4minecraft/amidst/issues/1144).
-
----
 
 Amidst
 ======
