@@ -22,11 +22,15 @@ Remove-Item -Recurse -Force $outDir -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force $stage | Out-Null
 Copy-Item $jar.FullName $stage
 
-# Minecraft itself runs inside this runtime, so it gets every module of the JDK rather than a trimmed set
+# Minecraft itself runs inside this runtime, so it gets every module of the JDK rather than a trimmed set.
+# jlink refuses to put itself into an image, so the two tooling modules that need it stay out.
+$modules = (& "$Jdk\bin\java.exe" --list-modules |
+    ForEach-Object { $_.Split("@")[0] } |
+    Where-Object { $_ -notin "jdk.jlink", "jdk.jpackage" }) -join ","
 & "$Jdk\bin\jpackage.exe" --type app-image --name AMIDST --app-version $version `
     --input $stage --main-jar $jar.Name `
     --icon "$root\src\main\resources\amidst\icon\amidst.ico" `
-    --add-modules ALL-MODULE-PATH `
+    --add-modules $modules `
     --dest $outDir | Out-Host
 if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
 
