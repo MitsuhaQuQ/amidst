@@ -1,5 +1,6 @@
 package amidst.gui.main;
 
+import amidst.Amidst;
 import amidst.Application;
 import amidst.documentation.AmidstThread;
 import amidst.documentation.CalledByAny;
@@ -317,9 +318,14 @@ public class Actions {
 	public void about() {
 		dialogs.displayInfo(
 				"About",
-				"Amidst - Advanced Minecraft Interfacing and Data/Structure Tracking\n\n"
-						+ "Author: Skidoodle aka skiphs\n" + "Mail: toolbox4minecraft+amidst@outlook.com\n"
-						+ "Project Page: https://github.com/toolbox4minecraft/amidst");
+				Amidst.VERSION.createLongVersionString() + " - Advanced Minecraft Interfacing and Data/Structure Tracking\n\n"
+						+ "This build supports Minecraft 1.18 and later, up to the current snapshots,\n"
+						+ "by asking Minecraft itself for its biomes and structures.\n"
+						+ "Project Page: " + UpdateInformationRetriever.PROJECT_URL + "\n"
+						+ "Downloads: " + UpdateInformationRetriever.RELEASES_URL + "\n"
+						+ "Questions and bug reports: " + UpdateInformationRetriever.ISSUES_URL + "\n\n"
+						+ "Based on Amidst by Skidoodle aka skiphs and the toolbox4minecraft team,\n"
+						+ "which is no longer maintained: https://github.com/toolbox4minecraft/amidst");
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)

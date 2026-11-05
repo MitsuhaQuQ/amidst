@@ -1,7 +1,5 @@
 package amidst.devtools;
 
-import amidst.AmidstVersion;
-import amidst.ResourceLoader;
 import amidst.devtools.settings.DevToolSettings;
 import amidst.mojangapi.file.MinecraftInstallation;
 import amidst.mojangapi.file.Version;
@@ -32,12 +30,6 @@ public class DevToolRunner {
 	@Test
 	public void generateRecognisedVersionList() throws FormatException, IOException {
 		new GenerateRecognisedVersionList(versionsDirectory(), librariesDirectory(), Version.newRemoteVersionList()).run();
-	}
-
-	@Ignore
-	@Test
-	public void generateUpdateInformationJson() {
-		new GenerateUpdateInformationJson(amidstVersion()).run();
 	}
 
 	@Ignore
@@ -98,7 +90,4 @@ public class DevToolRunner {
 		return DevToolSettings.INSTANCE.getBenchmarksDirectory();
 	}
 
-	private AmidstVersion amidstVersion() {
-		return AmidstVersion.from(ResourceLoader.getProperties("/amidst/metadata.properties"));
-	}
 }

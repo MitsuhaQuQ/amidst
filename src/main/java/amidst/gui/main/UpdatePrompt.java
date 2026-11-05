@@ -100,7 +100,7 @@ public class UpdatePrompt {
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
-	private void displayResult(UpdateInformationJson updateInformation) {
+	private void displayResult(UpdateInformation updateInformation) {
 		if (getUserChoice(updateInformation)) {
 			try {
 				openURL(new URI(updateInformation.getDownloadUrl()));
@@ -112,9 +112,9 @@ public class UpdatePrompt {
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
-	private boolean getUserChoice(UpdateInformationJson updateInformation) {
-		AmidstVersion newVersion = updateInformation.createAmidstVersion();
-		String message = updateInformation.getMessage();
+	private boolean getUserChoice(UpdateInformation updateInformation) {
+		AmidstVersion newVersion = updateInformation.getVersion();
+		String message = updateInformation.getName() + " (" + updateInformation.getTag() + ")";
 		if (newVersion.isNewerMajorVersionThan(currentVersion)) {
 			return askToConfirm(createMessage(message, newVersion, "major"));
 		} else if (newVersion.isNewerMinorVersionThan(currentVersion)) {
@@ -134,7 +134,7 @@ public class UpdatePrompt {
 	private String createMessage(String message, AmidstVersion newVersion, String versionType) {
 		return "A new " + versionType + " version of Amidst is available:\n" + "Current Version: "
 				+ currentVersion.createVersionString() + "\n" + "New Version: " + newVersion.createVersionString()
-				+ "\n" + "Do you want to upgrade?" + createMessageSuffix(message);
+				+ "\n" + "Do you want to open the download page?" + createMessageSuffix(message);
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
