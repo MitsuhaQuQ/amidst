@@ -3,9 +3,6 @@
 
 Amidst
 ======
-
-[![Build Status](https://travis-ci.org/toolbox4minecraft/amidst.svg?branch=master)](https://travis-ci.org/toolbox4minecraft/amidst)
-
 ## What is Amidst?
 
 Amidst is a tool to display an overview of a Minecraft world, without actually creating it.
