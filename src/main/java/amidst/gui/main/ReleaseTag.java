@@ -7,7 +7,7 @@ import amidst.AmidstVersion;
 import amidst.documentation.Immutable;
 
 /**
- * The tag of a release of this fork, like v4.8-mc1.18: the version of
+ * The tag of a release of this fork, like v4.8-mc26.3: the version of
  * Amidst, then the line of releases the tag belongs to, named by the
  * letters after the dash. The releases for MTM Worldgen are tagged
  * v4.7-mtm.2 and so on, so a build of one line is not offered the releases

@@ -21,7 +21,7 @@ public enum UpdateInformationRetriever {
 	private static final String RELEASES_API_URL = "https://api.github.com/repos/MitsuhaQuQ/amidst/releases?per_page=30";
 	/**
 	 * The line of releases this build belongs to, named by the suffix of the
-	 * tags, like v4.8-mc1.18. A tag without a suffix counts as well.
+	 * tags, like v4.8-mc26.3. A tag without a suffix counts as well.
 	 */
 	private static final String RELEASE_LINE = "mc";
 

@@ -8,7 +8,7 @@ import amidst.AmidstVersion;
 public class ReleaseTagTest {
 	@Test
 	public void shouldParseTheVersionAndTheLine() {
-		ReleaseTag tag = ReleaseTag.parse("v4.8-mc1.18");
+		ReleaseTag tag = ReleaseTag.parse("v4.8-mc26.3");
 		Assert.assertEquals("v4.8", tag.getVersion().createVersionString());
 		Assert.assertEquals("mc", tag.getLine());
 		Assert.assertTrue(tag.isLine("mc"));
@@ -35,7 +35,7 @@ public class ReleaseTagTest {
 	@Test
 	public void shouldCompareLikeAmidstVersions() {
 		AmidstVersion current = new AmidstVersion(4, 7, 0);
-		Assert.assertTrue(ReleaseTag.parse("v4.8-mc1.18").getVersion().isNewerMinorVersionThan(current));
+		Assert.assertTrue(ReleaseTag.parse("v4.8-mc26.3").getVersion().isNewerMinorVersionThan(current));
 		Assert.assertFalse(ReleaseTag.parse("v4.7-mc26.1").getVersion().isNewerMinorVersionThan(current));
 	}
 }
